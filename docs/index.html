@@ -1,201 +1,399 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地物探勘紀錄報告 | 陳亞歆 U11310002</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <style>
-        :root {
-            --accent: #d4af37; /* 礦石金 */
-            --bg-dark: #0d0d0e;
-            --card-bg: rgba(255, 255, 255, 0.03);
-        }
-        body { 
-            font-family: 'Noto Serif TC', serif; 
-            background: var(--bg-dark); 
-            color: #e5e5e5; 
-            scroll-behavior: smooth;
-        }
-        .glass { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .accent-text { color: var(--accent); }
-        .sidebar-link { transition: all 0.3s; border-left: 2px solid transparent; }
-        .sidebar-link.active { border-left: 2px solid var(--accent); color: var(--accent); background: rgba(212, 175, 55, 0.05); }
-        .btn-gold { background: var(--accent); color: #121213; transition: all 0.3s; }
-        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
-        
-        /* 特殊標籤顏色 */
-        .tag { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-left: 8px; }
-        .tag-Science { background: #3498db33; color: #3498db; }
-        .tag-Skill { background: #2ecc7133; color: #2ecc71; }
-        .tag-Lecture { background: #e67e2233; color: #e67e22; }
-        .tag-AI { background: #9b59b633; color: #9b59b6; }
-        
-        pre { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>地學札記｜非洲板塊與現代監測</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f8f5f0; /* 米白紙張色 */
+      --text-main: #332f2c; /* 深咖啡色文字 */
+      --accent-color: #a67c52; /* 暖木色 */
+      --card-bg: #ffffff;
+      --border-color: #e2dcd3;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Noto Sans TC', sans-serif;
+      line-height: 1.7;
+    }
+
+    .serif { font-family: 'Noto Serif TC', serif; }
+
+    .shell {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    header p {
+      color: #7c7267;
+      font-style: italic;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 4rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 2px; /* 捨棄圓角，改用直角更有手札感 */
+      padding: 2.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-color);
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid var(--accent-color);
+      padding-left: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      font-weight: normal;
+      background: #f0ede6;
+      padding: 0.2rem 0.8rem;
+      color: var(--accent-color);
+      border-radius: 50px;
+    }
+
+    /* 地圖展示區 */
+    .map-tabs, .code-tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .map-tab-btn, .code-tab-btn {
+      background: none;
+      border: none;
+      padding: 0.5rem 0;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #999;
+      position: relative;
+      transition: 0.3s;
+    }
+
+    .map-tab-btn.active, .code-tab-btn.active {
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    .map-tab-btn.active::after, .code-tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent-color);
+    }
+
+    .map-frame {
+      background: #fdfdfd;
+      border: 1px solid #f0f0f0;
+      margin: 1.5rem 0;
+    }
+
+    .map-frame img {
+      width: 100%;
+      height: auto;
+      filter: sepia(10%); /* 微微的舊照片感 */
+    }
+
+    .map-caption {
+      font-size: 0.85rem;
+      color: #8c8c8c;
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* 下拉選單與程式碼 */
+    .plate-select, .quiz-select {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid var(--border-color);
+      background: #fafafa;
+      margin: 1rem 0;
+      font-family: inherit;
+    }
+
+    pre {
+      background: #2d2d2d;
+      color: #ccc;
+      padding: 1.5rem;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      border-radius: 4px;
+    }
+
+    .code-block { display: none; }
+    .code-block.active { display: block; }
+
+    /* 邊界卡片 */
+    .boundary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .boundary-card {
+      padding: 1.5rem;
+      background: #fbfaf8;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .boundary-type {
+      color: var(--accent-color);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: block;
+    }
+
+    /* 11/05 新增區塊樣式 */
+    .new-section {
+      background: #332f2c;
+      color: #e2dcd3;
+      padding: 3rem;
+    }
+
+    .new-section h3 { color: #d4a373; margin-top: 0; }
+
+    /* 測驗區 */
+    .quiz {
+      background: #f0ede6;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .quiz-btn {
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      cursor: pointer;
+    }
+
+    footer {
+      margin-top: 5rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #999;
+      letter-spacing: 0.05em;
+    }
+
+    hr { border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0; }
+  </style>
 </head>
-<body class="flex min-h-screen">
+<body>
 
-<div id="app" class="flex w-full">
-    <nav class="w-64 lg:w-72 border-r border-white/5 hidden md:flex flex-col p-8 sticky top-0 h-screen bg-[#09090a]">
-        <div class="mb-10">
-            <h1 class="text-xl font-bold accent-text tracking-[0.2em]">地物探勘學<br>
-                <span class="text-[10px] text-gray-500 font-mono tracking-normal uppercase">U11310002 陳亞歆</span>
-            </h1>
+<div class="shell">
+  <header>
+    <h1 class="serif">地學札記</h1>
+    <p>從非洲板塊的宏觀張裂，到深度學習對震波的微觀判讀</p>
+  </header>
+
+  <main>
+    <section class="card new-section">
+      <div class="serif" style="font-size: 0.9rem; color: #a67c52; margin-bottom: 0.5rem;">Nov. 05, 2024</div>
+      <h3 class="serif" style="font-size: 1.8rem;">地震監測的數位革命：深度學習</h3>
+      <p style="font-size: 0.95rem; opacity: 0.9;">
+        廖勿渝博士向我們展示了當代地震學的最前線。傳統人工判讀（Manual Picking）在面對如花蓮地震等海量餘震時，往往顯得力不從心。透過 **Deep Learning（深度學習）**，系統能以統一且穩定的基準，在四面八方的複雜訊號中精準抓出 P 波與 S 波。這不僅是技術的突破，更是守護人身安全的黃金秒數。
+      </p>
+      <div style="font-size: 0.8rem; border-top: 1px solid #555; pt-3; margin-top: 1rem; color: #999;">
+        關鍵字：AI 監測、盲斷層拼圖、自動化相次辨識
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title serif">
+        非洲板塊地圖展示
+        <span class="badge">PyGMT 互動</span>
+      </div>
+
+      <div class="map-tabs">
+        <button class="map-tab-btn active" data-map="topo">地形圖</button>
+        <button class="map-tab-btn" data-map="quakes">地形 + 歷史強震</button>
+        <button class="map-tab-btn" data-map="globe">球面投影 + 熱點</button>
+      </div>
+
+      <div class="map-frame">
+        <img id="mapImage" src="https://raw.githubusercontent.com/yaxin06/plot_plate_boundary_pygmt/main/%E5%9C%B0%E5%BD%A2%E5%9C%96.png" alt="地形圖">
+      </div>
+      <p id="mapCaption" class="map-caption">使用 02m 解析度的 Earth relief，觀察非洲板塊附近的地形起伏。</p>
+
+      <hr>
+
+      <div class="serif" style="font-size: 1.1rem; margin-bottom: 0.5rem;">板塊百科對照</div>
+      <select id="plateSelect" class="plate-select">
+        <option value="Africa">Africa（非洲板塊）</option>
+        <option value="Pacific">Pacific（太平洋板塊）</option>
+        <option value="Eurasia">Eurasia（歐亞板塊）</option>
+        <option value="NorthAmerica">North America（北美板塊）</option>
+        <option value="SouthAmerica">South America（南美板塊）</option>
+        <option value="Nazca">Nazca（納斯卡板塊）</option>
+        <option value="India">India（印度板塊）</option>
+      </select>
+
+      <div id="plateTitle" class="serif" style="font-weight: bold; color: var(--accent-color);">Africa（非洲板塊）</div>
+      <p id="plateText" style="font-size: 0.9rem; color: #555;">
+        非洲板塊是面積最大的岩石圈板塊之一，包含非洲大陸與部分周邊海洋地殼。中央多為穩定的陸塊，但在東非裂谷帶可看到明顯的張裂型地形。
+      </p>
+    </section>
+
+    <section class="card">
+      <div class="card-title serif">PyGMT 繪圖邏輯</div>
+      
+      <div class="code-tabs">
+        <button class="code-tab-btn active" data-code="code1">地形圖</button>
+        <button class="code-tab-btn" data-code="code2">歷史強震</button>
+        <button class="code-tab-btn" data-code="code3">球面熱點</button>
+      </div>
+
+      <div id="code1" class="code-block active">
+        <pre><code># 載入地形資料
+grid = load_earth_relief(resolution="02m", region="-30/60/-40/40")
+fig = pygmt.Figure()
+fig.grdimage(grid=grid, cmap="geo", shading=True)</code></pre>
+      </div>
+
+      <div id="code2" class="code-block">
+        <pre><code># 疊加強震點位
+fig.plot(data="quakes_africa.txt", style="c0.25c", fill="red")</code></pre>
+      </div>
+
+      <div id="code3" class="code-block">
+        <pre><code># 球面投影 Orthographic
+fig.basemap(region="g", projection="G20/5/14c")</code></pre>
+      </div>
+
+      <div class="boundary-grid">
+        <div class="boundary-card">
+          <span class="boundary-type">Divergent</span>
+          <h4 class="serif">東非裂谷系統</h4>
+          <p style="font-size: 0.85rem; color: #666;">內部張裂帶，未來可能形成新洋盆，伴隨火山與淺層地震。</p>
         </div>
-        
-        <div class="space-y-1 flex-1 overflow-y-auto no-scrollbar">
-            <button @click="currentPage = 'home'" :class="{active: currentPage === 'home'}" class="sidebar-link w-full text-left px-4 py-3 text-sm mb-4">🏠 報告總覽</button>
-            <p class="text-[10px] uppercase text-gray-600 px-4 mb-2 tracking-widest">Weekly Logs</p>
-            <div v-for="w in weeks" :key="w.id">
-                <button @click="currentPage = w.id" :class="{active: currentPage === w.id}" class="sidebar-link w-full text-left px-4 py-2 text-xs opacity-70 hover:opacity-100 mb-1">
-                    <span class="font-mono text-[9px] block opacity-40">{{ w.date }}</span>
-                    {{ w.title }}
-                </button>
-            </div>
+        <div class="boundary-card">
+          <span class="boundary-type">Convergent</span>
+          <h4 class="serif">地中海帶</h4>
+          <p style="font-size: 0.85rem; color: #666;">向北與歐亞板塊碰撞，形成褶皺造山與頻繁地震。</p>
         </div>
+      </div>
 
-        <footer class="mt-auto pt-4 border-t border-white/5 text-[10px] text-gray-600 font-mono">
-            &copy; 2024-2025 GEOPHYSICS
-        </footer>
-    </nav>
+      <div class="quiz">
+        <div class="serif" style="margin-bottom: 0.5rem;">互動思考：東非裂谷屬於？</div>
+        <select id="quizSelect" class="quiz-select">
+          <option value="">請選擇類型</option>
+          <option value="convergent">聚合型（Convergent）</option>
+          <option value="divergent">張裂型（Divergent）</option>
+          <option value="transform">保守型（Transform）</option>
+        </select>
+        <button id="quizBtn" class="quiz-btn serif">確認答案</button>
+        <div id="quizResult" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+      </div>
+    </section>
+  </main>
 
-    <main class="flex-1 p-6 lg:p-16 overflow-x-hidden">
-        
-        <section v-if="currentPage === 'home'" class="max-w-4xl mx-auto animate__animated animate__fadeIn">
-            <div class="mb-20">
-                <span class="accent-text font-mono text-sm tracking-widest uppercase">Portfolio Overview</span>
-                <h2 class="text-6xl font-bold mt-4 mb-6 tracking-tighter italic">解構地心軌跡</h2>
-                <p class="text-gray-400 leading-relaxed max-w-2xl">
-                    本報告紀錄了 113 學年度第一學期地球物理探勘課程的學習歷程。從校園震測實驗到 AI 深度學習在地震預警的應用，我們透過實作與講座，一步步建構對地球內部的理解。
-                </p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div v-for="w in weeks" @click="currentPage = w.id" class="glass p-6 rounded-2xl cursor-pointer hover:bg-white/5 transition-all group border-l-2 border-transparent hover:border-amber-600">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-[10px] font-mono accent-text">{{ w.date }}</span>
-                        <span class="text-[10px] text-gray-600 uppercase">{{ w.id }}</span>
-                    </div>
-                    <h3 class="text-lg font-bold mb-1">{{ w.title }}</h3>
-                    <p class="text-xs text-gray-500">{{ w.subtitle }}</p>
-                </div>
-            </div>
-        </section>
-
-        <section v-for="w in weeks" :key="w.id" v-if="currentPage === w.id" class="max-w-4xl mx-auto animate__animated animate__fadeIn">
-            <header class="mb-12">
-                <span class="accent-text font-mono tracking-widest uppercase text-sm">{{ w.date }} / {{ w.id }}</span>
-                <h2 class="text-5xl font-bold mt-2 mb-4">{{ w.title }}</h2>
-                <p class="text-xl text-gray-500 italic">{{ w.subtitle }}</p>
-            </header>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="md:col-span-2 space-y-6">
-                    <div v-for="detail in w.details" class="glass p-8 rounded-3xl">
-                        <div class="flex items-center mb-4">
-                            <h4 class="font-bold text-amber-500">{{ detail.label }}</h4>
-                            <span :class="'tag tag-' + detail.tag">{{ detail.tag }}</span>
-                        </div>
-                        <p class="text-gray-300 leading-relaxed" v-html="detail.text"></p>
-                    </div>
-                    
-                    <div v-if="w.extra" class="p-8 rounded-3xl bg-amber-900/10 border border-amber-500/20">
-                        <h4 class="text-xs font-bold accent-text mb-4 uppercase tracking-widest">延伸紀錄 / Insight</h4>
-                        <p class="text-sm text-gray-400 italic leading-loose">"{{ w.extra }}"</p>
-                    </div>
-                    
-                    <div v-if="w.id === 'w8'" class="grid grid-cols-2 gap-4 mt-6">
-                        <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics_new/main/5.jpg" class="rounded-2xl border border-white/10">
-                        <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics_new/main/6.jpg" class="rounded-2xl border border-white/10">
-                    </div>
-                </div>
-
-                <div class="space-y-6">
-                    <div class="glass p-6 rounded-2xl border-t-2 border-amber-600">
-                        <h5 class="text-xs font-bold mb-4 text-gray-500 uppercase">Learning Progress</h5>
-                        <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                            <div class="h-full bg-amber-600" :style="{width: (indexByWeek(w.id)+1)*10 + '%'}"></div>
-                        </div>
-                        <p class="text-[10px] mt-2 text-right opacity-50">Step {{indexByWeek(w.id)+1}} of 10</p>
-                    </div>
-
-                    <div v-if="w.id === 'w9'" class="glass p-6 rounded-2xl bg-blue-900/10 border-t-2 border-blue-500">
-                        <h5 class="text-xs font-bold mb-2 text-blue-400">AI 技術亮點</h5>
-                        <p class="text-[10px] text-gray-400 leading-relaxed">
-                            廖博士強調 AI 能克服人工判讀的主觀誤差，在大規模地震序列中能提供更穩定的 P 波偵測。
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <button @click="currentPage = 'home'" class="mt-16 text-xs text-gray-600 hover:text-white transition">← 返回總覽首頁</button>
-        </section>
-
-    </main>
+  <footer>
+    &copy; 2024 Geophysics Report | 陳亞歆 U11310002
+  </footer>
 </div>
 
-
-
-<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script>
-    const { createApp } = Vue;
-    createApp({
-        data() {
-            return {
-                currentPage: 'home',
-                weeks: [
-                    { id: 'w1', date: '09/10', title: '探索地心：課程啟航', subtitle: '上課方式、成績計算與核心地圖', details: [
-                        { label: '上課方式', text: '探究式教學，強調從實作中理解物理現象。', tag: 'Structure' },
-                        { label: '成績計算', text: '專題發表 40% <br> 實驗報告 30% <br> 實作參與 30%', tag: 'Grading' },
-                        { label: '核心主題', text: '建立地球物理知識框架。', tag: 'Core' }
-                    ]},
-                    { id: 'w2', date: '09/17', title: 'GitHub Codespace 繳交教學', subtitle: '現代地物學家的開發環境', details: [
-                        { label: '工具學習', text: '雲端 IDE 環境配置。', tag: 'Coding' },
-                        { label: '地物知識', text: '基礎數學工具與資料型別。', tag: 'Knowledge' }
-                    ]},
-                    { id: 'w3', date: '09/24', title: '校園野外實驗', subtitle: '震測實驗報告實錄', details: [
-                        { label: '參考資料', text: '第五組：楊廂甯 & 陳亞歆。', tag: 'Report' },
-                        { label: '實驗重點', text: '校園現地震測數據收集。', tag: 'Field' }
-                    ], extra: '詳細記錄了震波在校園地層中的傳播特性，觀察不同介質產生的波形差異。'},
-                    { id: 'w4', date: '10/01', title: '甘禮有博士演講', subtitle: '專題演講心得紀錄', details: [
-                        { label: '核心觀點', text: '跨學科研究在地球科學的重要性，強調理論模型與實際觀測的對比。', tag: 'Lecture' }
-                    ]},
-                    { id: 'w5', date: '10/08', title: '折射探勘學 x Hugging Face', subtitle: '資料處理與互動程式', details: [
-                        { label: '地球物理', text: '利用臨界角折射原理推算地下層深度。', tag: 'Science' },
-                        { label: '處理技能', text: '透過 Hugging Face Space 將 Python 計算邏輯視覺化。', tag: 'Skill' }
-                    ]},
-                    { id: 'w6', date: '10/15', title: '重力探勘學 x Colab', subtitle: '地下構造密度異常分析', details: [
-                        { label: '地球物理', text: '學習布格重力校正與自由空間改正公式。', tag: 'Science' },
-                        { label: '處理技能', text: '在 Google Colab 環境下進行大量數據的處理與計算。', tag: 'Skill' }
-                    ]},
-                    { id: 'w7', date: '11/05', title: '板塊構造與地震 x PyGMT', subtitle: '繪製精美的全球構造圖', details: [
-                        { label: '地球物理', text: '分析全球板塊邊界與地震分布的空間關聯性。', tag: 'Science' },
-                        { label: '處理技能', text: '使用 PyGMT 繪製專業地形圖與震央分布圖。', tag: 'Skill' }
-                    ]},
-                    { id: 'w8', date: '12/10', title: '黃有志博士演講', subtitle: '從阿蘇火山到嘉南平原', details: [
-                        { label: '演講重點', text: '日本阿蘇火山 Vs 橫波構造研究。', tag: 'Expert' },
-                        { label: '實驗發現', text: '區分火山渣與浮石的密度與氣孔連通特性。', tag: 'Science' }
-                    ], extra: '黃博士分享了阿蘇火山巨大的破火山口構造，並對比了台灣與日本在防災應變上的細節差異。'},
-                    { id: 'w9', date: '12/17', title: '廖勿渝博士演講', subtitle: 'AI 遇上地震學', details: [
-                        { label: '最新趨勢', text: '深度學習如何取代人工挑相，提升判讀穩定性。', tag: 'AI' },
-                        { label: '研究目標', text: '長期監測微震以尋找地表不可見的「盲斷層」。', tag: 'Goal' }
-                    ], extra: '演講提到大埔地震序列的分析案例，展示了海量數據處理下人工無法企及的精確度。'},
-                    { id: 'w10', date: '12/24', title: '期末專題發表', subtitle: '研究成果展現', details: [
-                        { label: '發表形式', text: '全班期末學術海報展演，整合全學期技術應用。', tag: 'Final' }
-                    ]}
-                ]
-            }
-        },
-        methods: {
-            indexByWeek(id) {
-                return this.weeks.findIndex(w => w.id === id);
-            }
-        }
-    }).mount('#app');
+  // 地圖切換邏輯
+  const mapConfig = {
+    topo: {
+      src: "https://raw.githubusercontent.com/yaxin06/plot_plate_boundary_pygmt/main/%E5%9C%B0%E5%BD%A2%E5%9C%96.png",
+      caption: "「地形圖」：使用 02m 解析度的 Earth relief。"
+    },
+    quakes: {
+      src: "https://raw.githubusercontent.com/yaxin06/plot_plate_boundary_pygmt/main/%E8%9E%A2%E5%B9%95%E6%93%B7%E5%8F%96%E7%95%AB%E9%9D%A2%202025-12-03%20143817.png",
+      caption: "「地形 + 歷史強震」：疊加歷史強震分布，觀察板塊邊界關係。"
+    },
+    globe: {
+      src: "https://raw.githubusercontent.com/yaxin06/plot_plate_boundary_pygmt/main/%E8%9E%A2%E5%B9%95%E6%93%B7%E5%8F%96%E7%95%AB%E9%9D%A2%202025-12-03%20143543.png",
+      caption: "「球面投影」：標示全球位置與主要熱點。"
+    }
+  };
+
+  document.querySelectorAll('.map-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cfg = mapConfig[btn.dataset.map];
+      document.getElementById('mapImage').src = cfg.src;
+      document.getElementById('mapCaption').textContent = cfg.caption;
+      document.querySelectorAll('.map-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // 程式碼切換邏輯
+  document.querySelectorAll('.code-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.code-block').forEach(block => block.classList.remove('active'));
+      document.getElementById(btn.dataset.code).classList.add('active');
+      document.querySelectorAll('.code-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // 板塊百科文字
+  const plateData = {
+    Africa: { title: "Africa（非洲板塊）", text: "非洲板塊包含非洲大陸與部分周邊海洋地殼。在東非裂谷、紅海與大西洋中洋脊一帶，可看到明顯的張裂型邊界。" },
+    Pacific: { title: "Pacific（太平洋板塊）", text: "大部分為海洋地殼，周圍環太平洋帶為聚合型邊界，是地震與火山最活躍的區域。" },
+    Eurasia: { title: "Eurasia（歐亞板塊）", text: "包含歐亞大部分陸塊，與非洲、印度等板塊碰撞形成造山帶。" }
+  };
+
+  document.getElementById('plateSelect').addEventListener('change', (e) => {
+    const info = plateData[e.target.value] || plateData.Africa;
+    document.getElementById('plateTitle').textContent = info.title;
+    document.getElementById('plateText').textContent = info.text;
+  });
+
+  // 測驗邏輯
+  document.getElementById('quizBtn').addEventListener('click', () => {
+    const ans = document.getElementById('quizSelect').value;
+    const res = document.getElementById('quizResult');
+    if (ans === 'divergent') {
+      res.innerHTML = "🕊️ <span style='color: #a67c52'>正確。這是一段正在張裂的大地故事。</span>";
+    } else {
+      res.innerHTML = "☁️ <span style='color: #999'>再讀一次札記內容看看？</span>";
+    }
+  });
 </script>
+
 </body>
 </html>
