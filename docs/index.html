@@ -3,205 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>大地的迴響：地球物理學旅程</title>
+    <title>探索地底：地球物理學課程紀錄</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f9f8f4; color: #333; }
-        .serif { font-family: 'Noto Serif TC', serif; }
-        .bg-earth { background-color: #4A5D4E; }
-        .text-earth { color: #4A5D4E; }
-        .card-hover:hover { transform: translateY(-5px); transition: all 0.3s ease; }
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease; }
-        .fade-enter-from, .fade-leave-to { opacity: 0; }
-        .timeline-line::before { content: ''; position: absolute; left: 50%; width: 2px; height: 100%; background: #d1d5db; transform: translateX(-50%); z-index: 0; }
+        body { font-family: 'Noto Serif TC', serif; background: #1a1a1b; color: #e5e5e5; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .accent-text { color: #d4af37; } /* 金質文青色 */
+        .timeline-line { width: 2px; background: linear-gradient(180deg, #d4af37 0%, transparent 100%); }
+        .sidebar-link.active { border-left: 3px solid #d4af37; color: #d4af37; background: rgba(212, 175, 55, 0.1); }
+        .card-enter { transition: all 0.5s ease; cursor: pointer; }
+        .card-enter:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.08); }
     </style>
 </head>
-<body>
-    <div id="app" class="min-h-screen">
-        <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-earth tracking-widest cursor-pointer" @click="currentPage = 'home'">ECHOES OF EARTH</h1>
-            <div class="space-x-6 text-sm font-medium">
-                <button @click="currentPage = 'intro'" class="hover:text-earth transition">課程簡介</button>
-                <button @click="currentPage = 'home'" class="hover:text-earth transition">學習歷程</button>
+<body class="min-h-screen">
+
+<div id="app" class="flex min-h-screen">
+
+    <nav class="w-64 border-r border-white/10 hidden lg:flex flex-col p-6 sticky top-0 h-screen overflow-y-auto bg-[#141415]">
+        <h1 class="text-xl font-bold mb-8 accent-text tracking-widest leading-loose">探索地心<br>GEOPHYSICS</h1>
+        <div class="space-y-4">
+            <button @click="currentPage = 'home'" :class="{'active': currentPage === 'home'}" class="sidebar-link w-full text-left px-4 py-2 text-sm transition-all">首頁 - 主題總覽</button>
+            <template v-for="(item, index) in courses" :key="index">
+                <button @click="currentPage = item.id" :class="{'active': currentPage === item.id}" 
+                        class="sidebar-link w-full text-left px-4 py-2 text-xs opacity-70 hover:opacity-100 transition-all">
+                    {{ item.date }} {{ item.title.substring(0, 10) }}...
+                </button>
+            </template>
+        </div>
+    </nav>
+
+    <main class="flex-1 p-8 lg:p-16 max-w-6xl mx-auto">
+        
+        <section v-if="currentPage === 'home'" class="animate__animated animate__fadeIn">
+            <div class="mb-12">
+                <h2 class="text-4xl font-bold mb-4">週課主題紀錄</h2>
+                <p class="text-gray-400 italic font-light tracking-wide italic">紀錄從地表到地心的每一場探險。</p>
             </div>
-        </nav>
 
-        <transition name="fade" mode="out-in">
-            <section v-if="currentPage === 'home'" key="home" class="max-w-4xl mx-auto py-12 px-6">
-                <header class="text-center mb-16">
-                    <h2 class="serif text-4xl mb-4 text-gray-800">各週主題時光軸</h2>
-                    <p class="text-gray-500 italic">記錄從理論探索到數位編程的每一哩路</p>
-                </header>
-
-                <div class="relative timeline-line">
-                    <div v-for="(week, index) in weeks" :key="index" class="relative mb-12 flex items-center justify-between w-full" :class="index % 2 === 0 ? 'flex-row-reverse' : ''">
-                        <div class="w-5/12"></div>
-                        <div class="z-10 bg-earth text-white w-10 h-10 rounded-full flex items-center justify-center font-bold border-4 border-white shadow-sm">
-                            {{ index + 1 }}
+            <div class="relative">
+                <div class="absolute timeline-line h-full left-4 lg:left-1/2 transform -translate-x-1/2 opacity-20"></div>
+                
+                <div class="space-y-12">
+                    <div v-for="(item, index) in courses" :key="index" 
+                         @click="currentPage = item.id"
+                         class="relative flex flex-col lg:flex-row items-center justify-between group cursor-pointer">
+                        
+                        <div :class="index % 2 === 0 ? 'lg:text-right lg:pr-12' : 'lg:order-last lg:text-left lg:pl-12'" class="w-full lg:w-5/12 ml-10 lg:ml-0">
+                            <span class="text-xs accent-text font-mono tracking-widest">{{ item.date }}</span>
+                            <h3 class="text-xl font-bold mt-1 group-hover:text-white transition-colors">{{ item.title }}</h3>
+                            <p class="text-sm text-gray-400 mt-2">{{ item.subtitle }}</p>
                         </div>
-                        <div class="w-5/12 bg-white p-6 rounded-2xl shadow-sm card-hover border border-gray-100 cursor-pointer" @click="navigateTo(week.target)">
-                            <div class="text-xs text-earth font-bold mb-1">{{ week.date }}</div>
-                            <h3 class="font-bold text-lg mb-2">{{ week.title }}</h3>
-                            <p class="text-xs text-gray-400 leading-relaxed">{{ week.desc }}</p>
-                            <div class="mt-3 flex flex-wrap gap-2">
-                                <span v-for="tag in week.tags" :key="tag" class="text-[10px] px-2 py-1 bg-gray-100 text-gray-600 rounded-full">{{ tag }}</span>
-                            </div>
+
+                        <div class="absolute left-4 lg:left-1/2 transform -translate-x-1/2 w-3 h-3 rounded-full bg-amber-600 shadow-xl group-hover:scale-150 transition-transform"></div>
+
+                        <div class="hidden lg:block lg:w-5/12"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section v-else class="animate__animated animate__fadeIn">
+            <button @click="currentPage = 'home'" class="mb-8 text-sm text-gray-500 hover:text-white transition-colors">← 返回總覽</button>
+            
+            <div v-for="item in [currentCourse]" :key="item.id">
+                <div class="mb-10">
+                    <span class="accent-text font-mono tracking-widest">{{ item.date }}</span>
+                    <h2 class="text-4xl font-bold mt-4">{{ item.title }}</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div v-for="(content, i) in item.details" :key="i" class="glass p-8 rounded-2xl flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold accent-text mb-4 tracking-widest">{{ content.label }}</h4>
+                            <p class="text-lg leading-relaxed text-gray-200" v-html="content.text"></p>
+                        </div>
+                        <div v-if="content.tag" class="mt-8">
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-[10px] tracking-tighter uppercase">{{ content.tag }}</span>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <section v-else class="max-w-5xl mx-auto py-12 px-6">
-                <button @click="currentPage = 'home'" class="mb-8 text-sm text-gray-400 hover:text-earth flex items-center">
-                    ← 返回時光軸
-                </button>
+                <div v-if="item.extra" class="mt-12 p-8 glass rounded-2xl border-dashed border-amber-900/50">
+                    <h4 class="text-xs uppercase tracking-[0.2em] mb-4 opacity-50">相關資料與心得</h4>
+                    <p class="text-gray-400 leading-loose">{{ item.extra }}</p>
+                </div>
+            </div>
+        </section>
 
-                <article v-if="currentPage === 'intro'">
-                    <h2 class="serif text-4xl mb-8 border-l-4 border-earth pl-6">課程介紹：地心冒險指南</h2>
-                    <div class="grid md:grid-cols-2 gap-12">
-                        <div class="bg-white p-8 rounded-3xl shadow-sm">
-                            <h4 class="font-bold mb-4 text-xl">上課方式</h4>
-                            <p class="text-gray-600 leading-relaxed mb-6">結合「實體野外測量」與「雲端大數據分析」。我們不只在教室聽課，更走進黑森林架設地震儀，並在 Colab 上透過 Python 賦予數據靈魂。</p>
-                            <h4 class="font-bold mb-4 text-xl">成績計算</h4>
-                            <div class="space-y-4">
-                                <div class="relative h-4 bg-gray-100 rounded-full overflow-hidden">
-                                    <div class="absolute h-full bg-earth w-[40%]"></div>
-                                </div>
-                                <div class="flex justify-between text-xs text-gray-500"><span>平時作業與實作 (40%)</span><span>期中考 (20%)</span><span>期末專題 (40%)</span></div>
-                            </div>
-                        </div>
-                        <div class="bg-white p-8 rounded-3xl shadow-sm">
-                            <h4 class="font-bold mb-4 text-xl">核心目標</h4>
-                            <ul class="list-disc list-inside space-y-3 text-gray-600">
-                                <li>掌握地球物理基礎理論（震測、重力、地磁）</li>
-                                <li>熟練地科專用工具（PyGMT, ObsPy）</li>
-                                <li>AI 應用能力（Gemini API, Deep Learning 監測）</li>
-                            </ul>
-                        </div>
-                    </div>
-                </article>
+    </main>
+</div>
 
-                <article v-if="currentPage === 'field'">
-                    <h2 class="serif text-4xl mb-2 border-l-4 border-earth pl-6">黑森林的震動印記</h2>
-                    <p class="text-gray-400 mb-8 ml-8">校園野外實驗：折射探勘學實踐 </p>
-                    
-                    <div class="bg-white p-10 rounded-3xl shadow-sm mb-12">
-                        <div class="grid md:grid-cols-3 gap-8 mb-10">
-                            <div class="text-center">
-                                <div class="text-3xl font-serif text-earth mb-2">333.01</div>
-                                <div class="text-xs text-gray-500">平均直達波速 (m/s) </div>
-                            </div>
-                            <div class="text-center border-x border-gray-100">
-                                <div class="text-3xl font-serif text-earth mb-2">813.13</div>
-                                <div class="text-xs text-gray-500">平均折射波速 (m/s) </div>
-                            </div>
-                            <div class="text-center">
-                                <div class="text-3xl font-serif text-earth mb-2">7.67</div>
-                                <div class="text-xs text-gray-500">計算地層厚度 (m) </div>
-                            </div>
-                        </div>
-                        <h4 class="font-bold mb-4">組員洞察：為什麼是 24 個地震儀？</h4>
-                        <blockquote class="border-l-2 border-gray-200 pl-4 italic text-gray-600 mb-6">
-                            「老師補充說是因為『24』這個數字有很多因數，在分段、取距、或平均時都很方便使用。」—— 陳亞歆 
-                        </blockquote>
-                        <div class="p-4 bg-gray-50 rounded-xl text-sm">
-                            <p><strong>流程：</strong> 敲擊鐵板 → 24 個 Geophone 接收 → 電纜回傳 → 電腦走時分析 </p>
-                        </div>
-                    </div>
-                </article>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script>
+    const { createApp } = Vue;
 
-                <article v-if="currentPage === 'liao'">
-                    <h2 class="serif text-4xl mb-4 border-l-4 border-earth pl-6">AI 遇上地震學：從深度學習到自動化</h2>
-                    <p class="text-gray-400 mb-8 ml-8">廖勿渝博士專題演講紀錄 </p>
-
-                    <div class="grid md:grid-cols-2 gap-8 mb-12">
-                        <div class="bg-earth text-white p-8 rounded-3xl">
-                            <h4 class="font-bold text-lg mb-4">監測的雙重目標</h4>
-                            <p class="text-sm opacity-90 leading-relaxed">
-                                <strong>短期監測：</strong> 於破壞性 S 波到達前發出警報，爭取逃生時間。<br><br>
-                                <strong>長期監測：</strong> 透過大量微小地震資料累積，拼湊出「盲斷層」的幾何形狀。
-                            </p>
-                        </div>
-                        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                            <h4 class="font-bold text-lg mb-4 text-earth">AI 的介入點</h4>
-                            <p class="text-sm text-gray-600">
-                                傳統人工判讀波相在面對大量餘震（如花蓮地震）時，不僅費時且具備主觀偏差。透過 <strong>Deep Learning</strong> 的抗噪能力，AI 能在人類聽不見的雜訊中，精確挑選出 P 波相位。
-                            </p>
-                        </div>
-                    </div>
-                </article>
-
-                <article v-if="currentPage === 'huang'">
-                    <h2 class="serif text-4xl mb-4 border-l-4 border-earth pl-6">從阿蘇火山到嘉南平原：旅日經驗與應用</h2>
-                    <p class="text-gray-400 mb-8 ml-8">黃有志博士專題演講紀錄 </p>
-
-                    <div class="space-y-8">
-                        <div class="bg-white p-8 rounded-3xl shadow-sm">
-                            <h4 class="font-bold mb-4 flex items-center"><span class="w-2 h-2 bg-red-400 rounded-full mr-2"></span> 火山物理學：沉與浮的奧祕</h4>
-                            <p class="text-gray-600 text-sm leading-relaxed">
-                                火山渣與浮石的差異在於氣孔構造。<strong>火山渣</strong>氣孔連通，入水即沉；<strong>浮石</strong>氣孔獨立形成空氣室，因而能漂浮。每一顆石頭都記錄了岩漿噴發那一瞬的冷卻壓力故事。
-                            </p>
-                        </div>
-                        <div class="bg-white p-8 rounded-3xl shadow-sm">
-                            <h4 class="font-bold mb-4 flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span> 防災與地磁觀測</h4>
-                            <p class="text-gray-600 text-sm">
-                                日本利用地磁變化來觀測岩漿位置。當岩石被加熱超過<strong>居禮溫度</strong>時會消磁，若觀測到地磁減弱，則暗示地下岩漿正在上升。此外，日本將「震災關聯死」（如避難壓力導致的健康問題）納入統計，展現出更深厚的人文照護思維。
-                            </p>
-                        </div>
-                    </div>
-                </article>
-
-                <article v-if="currentPage === 'tech'">
-                    <h2 class="serif text-4xl mb-8 border-l-4 border-earth pl-6">地球物理數位技能庫</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-                        <div v-for="tool in ['pygmt', 'obspy', 'Gemini API', 'Hugging Face']" :key="tool" class="bg-white p-6 rounded-2xl text-center shadow-sm">
-                            <div class="font-bold text-earth">{{ tool }}</div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-900 text-green-400 p-8 rounded-3xl font-mono text-sm overflow-x-auto">
-                        <div class="mb-4"># 使用 PyGMT 繪製板塊邊界</div>
-                        <div>import pygmt</div>
-                        <div>fig = pygmt.Figure()</div>
-                        <div>fig.coast(region="g", projection="W15c", land="gray")</div>
-                        <div>fig.plot(data="plates.txt", pen="1p,red")</div>
-                        <div>fig.show()</div>
-                    </div>
-                </article>
-            </section>
-        </transition>
-
-        <footer class="mt-24 py-12 bg-gray-100 text-center text-gray-400 text-xs">
-            <p>© 2024 地球物理學與資料處理實務課程 | 數位學習歷程資產</p>
-        </footer>
-    </div>
-
-    <script>
-        const { createApp, ref } = Vue;
-        createApp({
-            setup() {
-                const currentPage = ref('home');
-                const weeks = [
-                    { date: "09/10", title: "探索地心：課程啟航", desc: "環境架設與 Dify 導入", target: 'intro', tags: ['Python', 'Hugging Face'] },
-                    { date: "09/17", title: "震測初探：折射探勘學", desc: "走時曲線與初波判讀", target: 'tech', tags: ['pygmt', 'obspy'] },
-                    { date: "09/24", title: "黑森林：校園野外實驗", desc: "實地佈設 24 個地震儀", target: 'field', tags: ['野外實習', '數據收集'] },
-                    { date: "10/01", title: "甘禮有博士：地球透視鏡", desc: "地震層析成像與正逆推", target: 'home', tags: ['專題演講'] },
-                    { date: "10/08", title: "互動介面：Hugging Face", desc: "將理論轉化為 web 程式", target: 'tech', tags: ['Gradio', 'Streamlit'] },
-                    { date: "10/15", title: "重力探勘：測量地球", desc: "自由空間與布蓋修正", target: 'tech', tags: ['Google Colab'] },
-                    { date: "11/19", title: "板塊與地磁：ObsPy 應用", desc: "處理地震波相與磁力數據", target: 'tech', tags: ['ObsPy'] },
-                    { date: "12/10", title: "黃有志博士：火山與防災", desc: "阿蘇火山的 Vs 構造研究", target: 'huang', tags: ['火山學', '日本防災'] },
-                    { date: "12/17", title: "廖勿渝博士：AI 地震監測", desc: "深度學習判讀 P 波香味", target: 'liao', tags: ['Deep Learning', '盲斷層'] }
-                ];
-
-                const navigateTo = (target) => {
-                    if (target !== 'home') currentPage.value = target;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                };
-
-                return { currentPage, weeks, navigateTo };
+    createApp({
+        data() {
+            return {
+                currentPage: 'home',
+                courses: [
+                    { id: 'w1', date: '09/10', title: '探索地心：課程啟航', subtitle: '上課方式、成績計算與核心地圖', details: [
+                        { label: '上課方式', text: '探究式教學，強調從實作中理解物理現象。', tag: 'Structure' },
+                        { label: '成績計算', text: '專題發表 40% <br> 實驗報告 30% <br> 實作參與 30%', tag: 'Grading' },
+                        { label: '核心主題', text: '建立地球物理知識框架。', tag: 'Core' }
+                    ]},
+                    { id: 'w2', date: '09/17', title: 'GitHub Codespace 繳交教學', subtitle: '現代地物學家的開發環境', details: [
+                        { label: '工具學習', text: '雲端 IDE 環境配置。', tag: 'Coding' },
+                        { label: '地物知識', text: '基礎數學工具與資料型別。', tag: 'Knowledge' }
+                    ]},
+                    { id: 'w3', date: '09/24', title: '校園野外實驗', subtitle: '震測實驗報告實錄', details: [
+                        { label: '參考資料', text: '第五組：楊廂甯 & 陳亞歆。', tag: 'Report' },
+                        { label: '實驗重點', text: '校園現地震測數據收集。', tag: 'Field Work' }
+                    ], extra: '詳細記錄了震波在校園地層中的傳播特性，觀察不同介質產生的波形差異。'},
+                    { id: 'w4', date: '10/01', title: '甘禮有博士演講', subtitle: '專題演講心得紀錄', details: [
+                        { label: '核心觀點', text: '跨學科研究在地球科學的重要性。', tag: 'Lecture' }
+                    ]},
+                    { id: 'w5', date: '10/08', title: '折射探勘學 x Hugging Face', subtitle: '資料處理與互動程式', details: [
+                        { label: '地球物理', text: '折射探勘學理論與走時曲線。', tag: 'Science' },
+                        { label: '處理技能', text: 'Hugging Face Space 互動展示。', tag: 'Skill' }
+                    ]},
+                    { id: 'w6', date: '10/15', title: '重力探勘學 x Colab', subtitle: '地下構造密度異常分析', details: [
+                        { label: '地球物理', text: '布格重力校正與密度分布。', tag: 'Science' },
+                        { label: '處理技能', text: 'Google Colab 雲端計算實踐。', tag: 'Skill' }
+                    ]},
+                    { id: 'w7', date: '11/05', title: '板塊構造與地震 x PyGMT', subtitle: '繪製精美的全球構造圖', details: [
+                        { label: '地球物理', text: '全球地震活動分布規律。', tag: 'Science' },
+                        { label: '處理技能', text: '使用 PyGMT 繪製專業地學地圖。', tag: 'Skill' }
+                    ]},
+                    { id: 'w8', date: '12/10', title: '黃有志博士演講', subtitle: '從阿蘇火山到嘉南平原', details: [
+                        { label: '演講重點', text: '旅日經驗分享與地震觀測應用。', tag: 'Expert' }
+                    ], extra: '討論了從日本阿蘇火山的觀測經驗到台灣嘉南地區地震風險的實務對比。'},
+                    { id: 'w9', date: '12/17', title: '廖勿渝博士演講', subtitle: 'AI 遇上地震學', details: [
+                        { label: '最新趨勢', text: '深度學習在全自動化監測的突破。', tag: 'AI Tech' }
+                    ], extra: '展示了如何利用 AI 演算法在極短時間內完成震相自動拾取與定位。'},
+                    { id: 'w10', date: '12/24', title: '期末專題發表', subtitle: '研究成果展現', details: [
+                        { label: '發表形式', text: '全班期末學術海報與簡報展演。', tag: 'Final' }
+                    ]}
+                ]
             }
-        }).mount('#app');
-    </script>
+        },
+        computed: {
+            currentCourse() {
+                return this.courses.find(c => c.id === this.currentPage);
+            }
+        }
+    }).mount('#app');
+</script>
+
 </body>
 </html>
