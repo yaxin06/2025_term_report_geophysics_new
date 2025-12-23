@@ -5,108 +5,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>地物探勘紀錄報告 | 陳亞歆 U11310002</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        :root { --accent: #d4af37; --bg-dark: #0d0d0e; }
-        body { font-family: 'Noto Serif TC', serif; background: var(--bg-dark); color: #e5e5e5; margin: 0; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        :root {
+            --accent: #d4af37; /* 礦石金 */
+            --bg-dark: #0d0d0e;
+            --card-bg: rgba(255, 255, 255, 0.03);
+        }
+        body { 
+            font-family: 'Noto Serif TC', serif; 
+            background: var(--bg-dark); 
+            color: #e5e5e5; 
+            scroll-behavior: smooth;
+        }
+        .glass { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .accent-text { color: var(--accent); }
-        .sidebar-link { transition: all 0.3s; border-left: 2px solid transparent; cursor: pointer; }
+        .sidebar-link { transition: all 0.3s; border-left: 2px solid transparent; }
         .sidebar-link.active { border-left: 2px solid var(--accent); color: var(--accent); background: rgba(212, 175, 55, 0.05); }
-        .tag { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 8px; }
-        .tag-Field { background: #27ae6033; color: #2ecc71; }
-        .tag-Science { background: #2980b933; color: #3498db; }
+        .btn-gold { background: var(--accent); color: #121213; transition: all 0.3s; }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
+        
+        /* 特殊標籤顏色 */
+        .tag { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; margin-left: 8px; }
+        .tag-Science { background: #3498db33; color: #3498db; }
+        .tag-Skill { background: #2ecc7133; color: #2ecc71; }
+        .tag-Lecture { background: #e67e2233; color: #e67e22; }
         .tag-AI { background: #9b59b633; color: #9b59b6; }
+        
+        pre { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="flex min-h-screen">
 
-<div id="app" class="flex w-full" v-cloak>
+<div id="app" class="flex w-full">
     <nav class="w-64 lg:w-72 border-r border-white/5 hidden md:flex flex-col p-8 sticky top-0 h-screen bg-[#09090a]">
         <div class="mb-10">
-            <h1 class="text-xl font-bold accent-text tracking-widest">地物探勘學<br>
-                <span class="text-[10px] text-gray-500 font-mono tracking-normal">U11310002 陳亞歆</span>
+            <h1 class="text-xl font-bold accent-text tracking-[0.2em]">地物探勘學<br>
+                <span class="text-[10px] text-gray-500 font-mono tracking-normal uppercase">U11310002 陳亞歆</span>
             </h1>
         </div>
         
-        <div class="space-y-1 flex-1 overflow-y-auto">
-            <button @click="changePage('home')" :class="{active: currentPage === 'home'}" class="sidebar-link w-full text-left px-4 py-3 text-sm mb-4">🏠 報告總覽</button>
+        <div class="space-y-1 flex-1 overflow-y-auto no-scrollbar">
+            <button @click="currentPage = 'home'" :class="{active: currentPage === 'home'}" class="sidebar-link w-full text-left px-4 py-3 text-sm mb-4">🏠 報告總覽</button>
             <p class="text-[10px] uppercase text-gray-600 px-4 mb-2 tracking-widest">Weekly Logs</p>
             <div v-for="w in weeks" :key="w.id">
-                <button @click="changePage(w.id)" :class="{active: currentPage === w.id}" class="sidebar-link w-full text-left px-4 py-2 text-xs opacity-70 hover:opacity-100 mb-1">
+                <button @click="currentPage = w.id" :class="{active: currentPage === w.id}" class="sidebar-link w-full text-left px-4 py-2 text-xs opacity-70 hover:opacity-100 mb-1">
                     <span class="font-mono text-[9px] block opacity-40">{{ w.date }}</span>
                     {{ w.title }}
                 </button>
             </div>
         </div>
+
+        <footer class="mt-auto pt-4 border-t border-white/5 text-[10px] text-gray-600 font-mono">
+            &copy; 2024-2025 GEOPHYSICS
+        </footer>
     </nav>
 
-    <main class="flex-1 p-6 lg:p-16 overflow-y-auto h-screen">
+    <main class="flex-1 p-6 lg:p-16 overflow-x-hidden">
         
-        <div v-if="currentPage === 'home'" class="max-w-4xl mx-auto animate__animated animate__fadeIn">
+        <section v-if="currentPage === 'home'" class="max-w-4xl mx-auto animate__animated animate__fadeIn">
             <div class="mb-20">
-                <h2 class="text-6xl font-bold mb-6 italic">解構地心軌跡</h2>
-                <p class="text-gray-400">整合 113 學年度實地測量數據與專家講座精華。</p>
+                <span class="accent-text font-mono text-sm tracking-widest uppercase">Portfolio Overview</span>
+                <h2 class="text-6xl font-bold mt-4 mb-6 tracking-tighter italic">解構地心軌跡</h2>
+                <p class="text-gray-400 leading-relaxed max-w-2xl">
+                    本報告紀錄了 113 學年度第一學期地球物理探勘課程的學習歷程。從校園震測實驗到 AI 深度學習在地震預警的應用，我們透過實作與講座，一步步建構對地球內部的理解。
+                </p>
             </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div v-for="w in weeks" @click="changePage(w.id)" class="glass p-6 rounded-2xl cursor-pointer hover:border-amber-600 transition-all">
-                    <span class="text-[10px] font-mono accent-text">{{ w.date }}</span>
-                    <h3 class="text-lg font-bold">{{ w.title }}</h3>
+                <div v-for="w in weeks" @click="currentPage = w.id" class="glass p-6 rounded-2xl cursor-pointer hover:bg-white/5 transition-all group border-l-2 border-transparent hover:border-amber-600">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] font-mono accent-text">{{ w.date }}</span>
+                        <span class="text-[10px] text-gray-600 uppercase">{{ w.id }}</span>
+                    </div>
+                    <h3 class="text-lg font-bold mb-1">{{ w.title }}</h3>
+                    <p class="text-xs text-gray-500">{{ w.subtitle }}</p>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div v-else class="max-w-4xl mx-auto animate__animated animate__fadeIn">
-            <div v-if="currentWeek">
-                <header class="mb-12">
-                    <span class="accent-text font-mono uppercase text-sm">{{ currentWeek.date }}</span>
-                    <h2 class="text-5xl font-bold mt-2 mb-4">{{ currentWeek.title }}</h2>
-                    <p class="text-xl text-gray-500 italic">{{ currentWeek.subtitle }}</p>
-                </header>
+        <section v-for="w in weeks" :key="w.id" v-if="currentPage === w.id" class="max-w-4xl mx-auto animate__animated animate__fadeIn">
+            <header class="mb-12">
+                <span class="accent-text font-mono tracking-widest uppercase text-sm">{{ w.date }} / {{ w.id }}</span>
+                <h2 class="text-5xl font-bold mt-2 mb-4">{{ w.title }}</h2>
+                <p class="text-xl text-gray-500 italic">{{ w.subtitle }}</p>
+            </header>
 
-                <div class="grid md:grid-cols-3 gap-8">
-                    <div class="md:col-span-2 space-y-6">
-                        <div v-for="detail in currentWeek.details" class="glass p-8 rounded-3xl">
-                            <div class="flex items-center mb-4">
-                                <h4 class="font-bold text-amber-500">{{ detail.label }}</h4>
-                                <span :class="'tag tag-' + detail.tag">{{ detail.tag }}</span>
-                            </div>
-                            <p class="text-gray-300 text-sm leading-relaxed" v-html="detail.text"></p>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="md:col-span-2 space-y-6">
+                    <div v-for="detail in w.details" class="glass p-8 rounded-3xl">
+                        <div class="flex items-center mb-4">
+                            <h4 class="font-bold text-amber-500">{{ detail.label }}</h4>
+                            <span :class="'tag tag-' + detail.tag">{{ detail.tag }}</span>
                         </div>
-                        
-                        <div v-if="currentWeek.id === 'w3'" class="glass p-8 rounded-3xl border border-green-900/30">
-                            <h4 class="font-bold text-green-500 mb-4 text-sm">黑森林震測實驗數據結果</h4>
-                            <div class="grid grid-cols-3 gap-4 text-center">
-                                <div class="bg-black/40 p-3 rounded-xl">
-                                    <p class="text-[10px] text-gray-500">直達波 V1</p>
-                                    <p class="text-sm font-mono">333.01 m/s</p>
-                                </div>
-                                <div class="bg-black/40 p-3 rounded-xl">
-                                    <p class="text-[10px] text-gray-500">折射波 V2</p>
-                                    <p class="text-sm font-mono">813.13 m/s</p>
-                                </div>
-                                <div class="bg-black/40 p-3 rounded-xl border border-amber-600/30">
-                                    <p class="text-[10px] text-amber-500">地層厚度</p>
-                                    <p class="text-sm font-mono text-amber-500">7.67 m</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div v-if="currentWeek.extra" class="p-8 rounded-3xl bg-amber-900/10 border border-amber-500/20 italic text-sm text-gray-400">
-                            "{{ currentWeek.extra }}"
-                        </div>
+                        <p class="text-gray-300 leading-relaxed" v-html="detail.text"></p>
+                    </div>
+                    
+                    <div v-if="w.extra" class="p-8 rounded-3xl bg-amber-900/10 border border-amber-500/20">
+                        <h4 class="text-xs font-bold accent-text mb-4 uppercase tracking-widest">延伸紀錄 / Insight</h4>
+                        <p class="text-sm text-gray-400 italic leading-loose">"{{ w.extra }}"</p>
+                    </div>
+                    
+                    <div v-if="w.id === 'w8'" class="grid grid-cols-2 gap-4 mt-6">
+                        <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics_new/main/5.jpg" class="rounded-2xl border border-white/10">
+                        <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics_new/main/6.jpg" class="rounded-2xl border border-white/10">
                     </div>
                 </div>
-                <button @click="changePage('home')" class="mt-16 text-xs text-gray-600 hover:text-white">← 返回總覽</button>
+
+                <div class="space-y-6">
+                    <div class="glass p-6 rounded-2xl border-t-2 border-amber-600">
+                        <h5 class="text-xs font-bold mb-4 text-gray-500 uppercase">Learning Progress</h5>
+                        <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div class="h-full bg-amber-600" :style="{width: (indexByWeek(w.id)+1)*10 + '%'}"></div>
+                        </div>
+                        <p class="text-[10px] mt-2 text-right opacity-50">Step {{indexByWeek(w.id)+1}} of 10</p>
+                    </div>
+
+                    <div v-if="w.id === 'w9'" class="glass p-6 rounded-2xl bg-blue-900/10 border-t-2 border-blue-500">
+                        <h5 class="text-xs font-bold mb-2 text-blue-400">AI 技術亮點</h5>
+                        <p class="text-[10px] text-gray-400 leading-relaxed">
+                            廖博士強調 AI 能克服人工判讀的主觀誤差，在大規模地震序列中能提供更穩定的 P 波偵測。
+                        </p>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <button @click="currentPage = 'home'" class="mt-16 text-xs text-gray-600 hover:text-white transition">← 返回總覽首頁</button>
+        </section>
+
     </main>
 </div>
 
 
 
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script>
     const { createApp } = Vue;
     createApp({
@@ -116,49 +150,49 @@
                 weeks: [
                     { id: 'w1', date: '09/10', title: '探索地心：課程啟航', subtitle: '上課方式、成績計算與核心地圖', details: [
                         { label: '上課方式', text: '探究式教學，強調從實作中理解物理現象。', tag: 'Structure' },
-                        { label: '成績計算', text: '專題發表 40% <br> 實驗報告 30% <br> 實作參與 30%', tag: 'Grading' }
+                        { label: '成績計算', text: '專題發表 40% <br> 實驗報告 30% <br> 實作參與 30%', tag: 'Grading' },
+                        { label: '核心主題', text: '建立地球物理知識框架。', tag: 'Core' }
                     ]},
                     { id: 'w2', date: '09/17', title: 'GitHub Codespace 繳交教學', subtitle: '現代地物學家的開發環境', details: [
-                        { label: '工具學習', text: '雲端 IDE 環境配置。', tag: 'Coding' }
+                        { label: '工具學習', text: '雲端 IDE 環境配置。', tag: 'Coding' },
+                        { label: '地物知識', text: '基礎數學工具與資料型別。', tag: 'Knowledge' }
                     ]},
-                    { id: 'w3', date: '09/24', title: '校園野外實驗', subtitle: '黑森林旁震測報告實錄', details: [
-                        { label: '實驗規格', text: '使用 24 個 Geophones，間距 2m，全長 48m。有趣的點：24 這個數字因數多，便於分段平均。', tag: 'Field' },
-                        { label: '操作心得', text: '需考慮地形高低落差與水準校正。', tag: 'Field' }
-                    ], extra: '本次實驗估算地層厚度約 7.67 公尺。'},
+                    { id: 'w3', date: '09/24', title: '校園野外實驗', subtitle: '震測實驗報告實錄', details: [
+                        { label: '參考資料', text: '第五組：楊廂甯 & 陳亞歆。', tag: 'Report' },
+                        { label: '實驗重點', text: '校園現地震測數據收集。', tag: 'Field' }
+                    ], extra: '詳細記錄了震波在校園地層中的傳播特性，觀察不同介質產生的波形差異。'},
                     { id: 'w4', date: '10/01', title: '甘禮有博士演講', subtitle: '專題演講心得紀錄', details: [
-                        { label: '核心觀點', text: '跨學科研究在地球科學的重要性。', tag: 'Lecture' }
+                        { label: '核心觀點', text: '跨學科研究在地球科學的重要性，強調理論模型與實際觀測的對比。', tag: 'Lecture' }
                     ]},
                     { id: 'w5', date: '10/08', title: '折射探勘學 x Hugging Face', subtitle: '資料處理與互動程式', details: [
-                        { label: '地球物理', text: '折射探勘學理論與走時曲線。', tag: 'Science' }
+                        { label: '地球物理', text: '利用臨界角折射原理推算地下層深度。', tag: 'Science' },
+                        { label: '處理技能', text: '透過 Hugging Face Space 將 Python 計算邏輯視覺化。', tag: 'Skill' }
                     ]},
                     { id: 'w6', date: '10/15', title: '重力探勘學 x Colab', subtitle: '地下構造密度異常分析', details: [
-                        { label: '處理技能', text: 'Google Colab 雲端計算實踐。', tag: 'Skill' }
+                        { label: '地球物理', text: '學習布格重力校正與自由空間改正公式。', tag: 'Science' },
+                        { label: '處理技能', text: '在 Google Colab 環境下進行大量數據的處理與計算。', tag: 'Skill' }
                     ]},
                     { id: 'w7', date: '11/05', title: '板塊構造與地震 x PyGMT', subtitle: '繪製精美的全球構造圖', details: [
-                        { label: '處理技能', text: '使用 PyGMT 繪製專業地學地圖。', tag: 'Skill' }
+                        { label: '地球物理', text: '分析全球板塊邊界與地震分布的空間關聯性。', tag: 'Science' },
+                        { label: '處理技能', text: '使用 PyGMT 繪製專業地形圖與震央分布圖。', tag: 'Skill' }
                     ]},
                     { id: 'w8', date: '12/10', title: '黃有志博士演講', subtitle: '從阿蘇火山到嘉南平原', details: [
-                        { label: '火山物理', text: '透過橫波 (Vs) 構造觀察阿蘇火山。區分火山渣(沉)與浮石(浮)的實驗學問。', tag: 'Science' }
-                    ], extra: '日本隱沒帶火山弧岩漿噴發較台灣錯動擠壓邊界更為活躍。'},
+                        { label: '演講重點', text: '日本阿蘇火山 Vs 橫波構造研究。', tag: 'Expert' },
+                        { label: '實驗發現', text: '區分火山渣與浮石的密度與氣孔連通特性。', tag: 'Science' }
+                    ], extra: '黃博士分享了阿蘇火山巨大的破火山口構造，並對比了台灣與日本在防災應變上的細節差異。'},
                     { id: 'w9', date: '12/17', title: '廖勿渝博士演講', subtitle: 'AI 遇上地震學', details: [
-                        { label: '技術突破', text: 'Deep Learning 解決人工判讀主觀誤差，提高 P 波偵測效率。', tag: 'AI' }
-                    ], extra: '大埔地震序列的分析展示了海量數據自動拾取的強大能力。'},
+                        { label: '最新趨勢', text: '深度學習如何取代人工挑相，提升判讀穩定性。', tag: 'AI' },
+                        { label: '研究目標', text: '長期監測微震以尋找地表不可見的「盲斷層」。', tag: 'Goal' }
+                    ], extra: '演講提到大埔地震序列的分析案例，展示了海量數據處理下人工無法企及的精確度。'},
                     { id: 'w10', date: '12/24', title: '期末專題發表', subtitle: '研究成果展現', details: [
-                        { label: '發表形式', text: '全班學術海報與簡報展演。', tag: 'Final' }
+                        { label: '發表形式', text: '全班期末學術海報展演，整合全學期技術應用。', tag: 'Final' }
                     ]}
                 ]
             }
         },
-        computed: {
-            currentWeek() {
-                return this.weeks.find(w => w.id === this.currentPage);
-            }
-        },
         methods: {
-            changePage(pageId) {
-                this.currentPage = pageId;
-                // 強制滾動回頂部
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+            indexByWeek(id) {
+                return this.weeks.findIndex(w => w.id === id);
             }
         }
     }).mount('#app');
