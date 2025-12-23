@@ -1,1327 +1,1083 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>地心冒險指南：地球物理學與資料處理實務</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #fcfbf7; color: #3a3a3a; }
+
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f9f8f4; color: #333; }
+
         .serif { font-family: 'Noto Serif TC', serif; }
-        .bg-earth-dark { background-color: #3e4a3d; }
-        .text-earth { color: #4A5D4E; }
-        .bg-earth-light { background-color: #f0f4f1; }
-        
-        /* 動態轉場效果 */
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.4s ease, transform 0.4s ease; }
-        .fade-enter-from { opacity: 0; transform: translateY(10px); }
-        .fade-leave-to { opacity: 0; transform: translateY(-10px); }
 
-        /* 文青感邊框與陰影 */
-        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 24px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
-        .timeline-dot { position: relative; }
-        .timeline-dot::after { content: ''; position: absolute; left: 50%; top: 40px; bottom: -40px; width: 1px; background: #e5e7eb; transform: translateX(-50%); z-index: 0; }
-        .last-dot::after { display: none; }
-    </style>
-</head>
-<body>
-    <div id="app">
-        <nav class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-md border-b border-stone-100 px-8 py-5 flex justify-between items-center">
-            <div class="flex items-center space-x-3 cursor-pointer" @click="currentPage = 'home'">
-                <span class="w-8 h-8 bg-earth-dark rounded-full flex items-center justify-center text-white text-xs">GE</span>
-                <h1 class="serif font-bold text-xl tracking-widest text-stone-800">地心冒險指南</h1>
-            </div>
-            <div class="hidden md:flex space-x-8 text-sm font-medium tracking-wider text-stone-500">
-                <button @click="currentPage = 'home'" :class="{'text-earth font-bold': currentPage === 'home'}" class="hover:text-earth transition">時光軸</button>
-                <button @click="currentPage = 'intro'" :class="{'text-earth font-bold': currentPage === 'intro'}" class="hover:text-earth transition">課程介紹</button>
-                <button @click="currentPage = 'tech'" class="hover:text-earth transition">技術工具</button>
-            </div>
-        </nav>
-
-        <main class="pt-32 pb-20 px-6 max-w-6xl mx-auto">
-            <transition name="fade" mode="out-in">
-                
-                <div v-if="currentPage === 'home'" key="home">
-                    <div class="text-center mb-20">
-                        <span class="text-earth font-bold tracking-[0.3em] text-xs uppercase mb-3 block">Timeline</span>
-                        <h2 class="serif text-5xl text-stone-800 mb-6">探險日誌：18週的跨界旅程</h2>
-                        <p class="text-stone-400 max-w-xl mx-auto leading-relaxed">從數位環境架設到野外震測實驗，記錄我們如何利用程式碼聽見大地的迴響。</p>
-                    </div>
-
-                    <div class="grid gap-8 relative">
-                        <div v-for="(week, index) in weeks" :key="index" 
-                             class="flex items-start space-x-6 timeline-dot" 
-                             :class="{'last-dot': index === weeks.length - 1}">
-                            <div class="flex-none w-16 pt-2 text-right">
-                                <span class="serif text-stone-300 font-bold text-lg italic">{{ week.date }}</span>
-                            </div>
-                            <div class="z-10 w-10 h-10 rounded-full bg-white border-2 border-earth-dark flex items-center justify-center flex-none shadow-sm">
-                                <span class="text-[10px] font-bold text-earth">{{ index + 1 }}</span>
-                            </div>
-                            <div @click="navigateTo(week.target)" 
-                                 class="glass-card flex-grow p-8 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                                <div class="flex justify-between items-start mb-4">
-                                    <h3 class="serif text-xl font-bold text-stone-800">{{ week.title }}</h3>
-                                    <span class="px-3 py-1 bg-stone-100 text-[10px] rounded-full text-stone-500 font-bold uppercase tracking-wider">{{ week.category }}</span>
-                                </div>
-                                <p class="text-stone-500 text-sm leading-relaxed mb-4">{{ week.desc }}</p>
-                                <div class="flex flex-wrap gap-2">
-                                    <span v-for="tag in week.tags" class="text-[10px] text-earth px-2 py-0.5 bg-earth-light rounded">{{ tag }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div v-else-if="currentPage === 'intro'" key="intro" class="max-w-4xl mx-auto">
-                    <header class="mb-16">
-                        <h2 class="serif text-5xl text-stone-800 mb-8 border-b border-stone-100 pb-8">課程介紹：解構地底的雙螺旋</h2>
-                        <p class="text-stone-600 leading-relaxed text-lg">
-                            根據 <a href="#" class="text-earth underline italic">Hugging Face Geophysics Class</a> 的教育架構，本課程不僅是地質知識的傳遞，更是一場關於「數據」與「地球」的對話。我們將長達 6,371 公里的地層秘密，透過 Python 程式碼與 AI 模型進行解碼。
-                        </p>
-                    </header>
-
-                    <div class="grid md:grid-cols-2 gap-10 mb-20">
-                        <div class="glass-card p-10 bg-earth-dark text-white">
-                            <h4 class="serif text-2xl mb-6">上課方式：實踐者導向</h4>
-                            <p class="text-stone-300 text-sm leading-loose mb-6">
-                                🧭
-上課方式
-結合「實體野外測量」與「雲端大數據分析」。我們不只在教室聽課，更走進黑森林架設地震儀，並在 Hugging Face 與 Colab 上實作個人化的地學助手。
-
-✓
-實地探勘：測量地層厚度與波速
-✓
-AI 整合：利用 Gemini API 輔助判讀
-✓
-數位部署：將研究成果網頁化
-                            </p>
-                            <ul class="space-y-4 text-sm">
-                                <li class="flex items-center"><span class="w-1.5 h-1.5 bg-white rounded-full mr-3"></span> <strong>野外實測：</strong> 在黑森林親手架設地震儀。</li>
-                                <li class="flex items-center"><span class="w-1.5 h-1.5 bg-white rounded-full mr-3"></span> <strong>雲端實作：</strong> 使用 Google Colab 與 Hugging Face。</li>
-                                <li class="flex items-center"><span class="w-1.5 h-1.5 bg-white rounded-full mr-3"></span> <strong>大師講座：</strong> 連結產學界最頂尖的專家經驗。</li>
-                            </ul>
-                        </div>
-                        <div class="glass-card p-10">
-                            <h4 class="serif text-2xl mb-6 text-stone-800">成績計算：冒險評等</h4>
-                            <div class="space-y-8">
-                                <div v-for="grade in grading" :key="grade.name">
-                                    <div class="flex justify-between text-xs mb-2 font-bold uppercase tracking-widest text-stone-400">
-                                        <span>{{ grade.name }}</span>
-                                        <span>{{ grade.percent }}%</span>
-                                    </div>
-                                    <div class="w-full h-1.5 bg-stone-100 rounded-full">
-                                        <div class="h-full bg-earth-dark rounded-full" :style="{width: grade.percent + '%'}"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-20">
-                        <h4 class="serif text-3xl mb-10 text-center">核心學習模組</h4>
-                        <div class="grid md:grid-cols-3 gap-6">
-                            <div class="p-8 border border-stone-100 rounded-3xl text-center">
-                                <div class="text-3xl mb-4">🐍</div>
-                                <h5 class="font-bold mb-2">數位編程力</h5>
-                                <p class="text-stone-400 text-xs leading-relaxed">學會使用 Python, ObsPy 與 PyGMT 處理複雜的地學圖資與波形。</p>
-                            </div>
-                            <div class="p-8 border border-stone-100 rounded-3xl text-center">
-                                <div class="text-3xl mb-4">⚒️</div>
-                                <h5 class="font-bold mb-2">野外實踐力</h5>
-                                <p class="text-stone-400 text-xs leading-relaxed">理解震測儀器原理，掌握測線佈設、信號增益與野外數據收集。</p>
-                            </div>
-                            <div class="p-8 border border-stone-100 rounded-3xl text-center">
-                                <div class="text-3xl mb-4">🤖</div>
-                                <h5 class="font-bold mb-2">AI 整合力</h5>
-                                <p class="text-stone-400 text-xs leading-relaxed">導入 Gemini API 與深度學習，將傳統地震監測轉向自動化與智能化。</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else-if="currentPage === 'codespace'" key="codespace" class="max-w-4xl mx-auto py-12 px-6">
-    <header class="mb-12 border-b border-stone-200 pb-8">
-        <h2 class="serif text-5xl text-stone-800 mb-6">數位地球物理實驗室</h2>
-        <p class="text-stone-400 italic text-lg tracking-wide">雲端 Codespace 與 Python 地震學工具鏈教學</p>
-    </header>
-
-    <section class="mb-16">
-        <h3 class="serif text-2xl mb-6 flex items-center text-earth">
-            <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">01</span>
-            環境準備：Fork 與啟動
-        </h3>
-        <div class="grid md:grid-cols-2 gap-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-                <p class="font-bold mb-2">1. 建立個人副本</p>
-                <p class="text-sm text-stone-500 mb-4">進入老師的 <a href="https://github.com/cwbdayi638/geophysics-class-2025" target="_blank" class="text-earth underline">GitHub Repo</a>，點擊右上角 <strong>Fork</strong>。</p>
-                <div class="bg-stone-50 p-3 rounded-lg border border-stone-200 text-xs italic text-center">
-                    這會在你的帳號下生成一份完全相同的代碼副本。
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-                <p class="font-bold mb-2">2. 開啟雲端環境</p>
-                <p class="text-sm text-stone-500 mb-4">點擊綠色 <strong>&lt;&gt; Code</strong> 按鈕，選擇 <strong>Create codespace on main</strong>。</p>
-                <div class="flex items-center text-xs text-amber-600 bg-amber-50 p-2 rounded-lg">
-                    <span>🕒 等待約 1-2 分鐘讓環境自動安裝 ObsPy 與 PyGMT。</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="mb-16 bg-stone-100 p-8 rounded-[2.5rem]">
-        <h3 class="serif text-2xl mb-6 flex items-center">
-            <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">02</span>
-            撰寫作業：AI 輔助開發
-        </h3>
-        <div class="space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-md">
-                <p class="text-sm font-bold text-stone-700 mb-3">📍 目錄：<code>/hw/hw_01</code> | 檔名：<code>HW01_學號.ipynb</code></p>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="border-l-4 border-blue-400 pl-4">
-                        <h4 class="font-bold text-blue-600 mb-2">ObsPy：地震波分析</h4>
-                        <p class="text-xs text-stone-500 mb-3">利用 AI 輔助輸入波形讀取指令：</p>
-                        <pre class="bg-stone-800 text-stone-100 p-3 rounded-lg text-[10px] overflow-x-auto">
-# AI Prompt 範例:
-# "請幫我用 obspy 讀取地震數據
-# 並繪製濾波後的地震走時圖"
-st = obspy.read()
-st.filter("bandpass", freqmin=1, freqmax=10)
-st.plot()</pre>
-                    </div>
-                    <div class="border-l-4 border-green-400 pl-4">
-                        <h4 class="font-bold text-green-600 mb-2">PyGMT：地圖繪製</h4>
-                        <p class="text-xs text-stone-500 mb-3">利用 AI 輔助輸入地形圖繪製指令：</p>
-                        <pre class="bg-stone-800 text-stone-100 p-3 rounded-lg text-[10px] overflow-x-auto">
-# AI Prompt 範例:
-# "請幫我用 pygmt 繪製台灣地圖
-# 並標註震央位置"
-fig = pygmt.Figure()
-fig.grdimage(grid="@earth_day_01m")
-fig.plot(x=lon, y=lat, style="c0.3c")</pre>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="mb-16">
-        <h3 class="serif text-2xl mb-6 flex items-center text-earth">
-            <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">03</span>
-            提交作業：Git 指令與 PR
-        </h3>
-        
-        <div class="space-y-4">
-            <div class="bg-stone-900 rounded-2xl p-6 shadow-xl">
-                <div class="flex items-center mb-4">
-                    <div class="flex space-x-2 mr-4">
-                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                    </div>
-                    <span class="text-stone-500 font-mono text-xs">Terminal - Codespace</span>
-                </div>
-                <div class="font-mono text-sm space-y-2">
-                    <p class="text-stone-400"># 使用老師提供的快捷指令上傳</p>
-                    <p class="text-white">sh /workspaces/geophysics-class-2025/./git_all.sh <span class="text-yellow-400">"update HW1-學號"</span></p>
-                    <p class="text-stone-400 mt-4"># 或者手動標準流程：</p>
-                    <p class="text-white">git add .</p>
-                    <p class="text-white">git commit -m <span class="text-yellow-400">"完成 HW1"</span></p>
-                    <p class="text-white">git push</p>
-                </div>
-            </div>
-
-            <div class="bg-white p-8 rounded-3xl border border-stone-200">
-                <h4 class="font-bold mb-4 flex items-center text-stone-800">
-                    <span class="mr-2">🚀</span> 建立 Pull Request (PR) 繳交作業
-                </h4>
-                <ol class="text-sm text-stone-600 space-y-3 list-decimal pl-5 leading-relaxed">
-                    <li>回到你的 GitHub 頁面，點擊 <strong>Contribute → Open pull request</strong>。</li>
-                    <li>確認左側 Base 為老師的 Repo，右側 Head 為你的 Fork Repo。</li>
-                    <li><strong>重點：</strong> 仔細填寫標題與內容，附上你的 <strong>ObsPy/PyGMT 結果圖</strong>，並寫下你的觀察。</li>
-                    <li>點擊 <strong>Create pull request</strong>，看到「Open」標籤即代表繳交成功！</li>
-                </ol>
-            </div>
-        </div>
-    </section>
-
-    <footer class="bg-earth/10 p-8 rounded-3xl border border-earth/20">
-        <h4 class="font-bold text-earth mb-2">🔔 批改與回饋</h4>
-        <p class="text-sm text-stone-600 leading-relaxed">
-            老師會在 PR 頁面留言。若需要修改（Request changes），直接在 Codespace 更新程式並再次 <strong>Push</strong> 即可，PR 內容會自動同步。
-        </p>
-    </footer>
-</div>
-                </div>
-<div v-else-if="currentPage === 'field'" key="field" class="max-w-4xl mx-auto py-10 px-4">
-    <header class="text-center mb-16">
-        <h2 class="serif text-5xl text-stone-800 mb-6">黑森林的震動印記</h2>
-        <p class="text-stone-500 italic tracking-widest text-lg">—— 校園折射震測實驗報告 (第五組) ——</p>
-    </header>
-
-    <div class="grid md:grid-cols-3 gap-6 mb-16">
-        <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-earth card-hover text-center">
-            <div class="text-xs text-stone-400 font-bold uppercase mb-2">平均直達波速</div>
-            <div class="text-3xl font-serif text-earth">333.01 <span class="text-sm">m/s</span></div>
-        </div>
-        <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-earth card-hover text-center">
-            <div class="text-xs text-stone-400 font-bold uppercase mb-2">平均折射波速</div>
-            <div class="text-3xl font-serif text-earth">813.13 <span class="text-sm">m/s</span></div>
-        </div>
-        <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-earth card-hover text-center">
-            <div class="text-xs text-stone-400 font-bold uppercase mb-2">計算地層厚度</div>
-            <div class="text-3xl font-serif text-earth">7.67 <span class="text-sm">m</span></div>
-        </div>
-    </div>
-
-    <div class="space-y-20 text-stone-700 leading-relaxed">
-        
-        <section class="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-                <h3 class="serif text-2xl mb-6 flex items-center">
-                    <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">01</span>
-                    實驗目的與設備
-                </h3>
-                <p class="mb-4">本次實驗旨在探測從<strong>黑森林至圖書館後方</strong>的地層結構。我們利用人工擊發震波，測量地層厚度及波速（V1, V2）。</p>
-                <ul class="space-y-2 text-sm text-stone-500">
-                    <li class="flex items-center"><span class="w-1.5 h-1.5 bg-earth rounded-full mr-2"></span> 24 個 Geophones (間距 2m, 全長 48m)</li>
-                    <li class="flex items-center"><span class="w-1.5 h-1.5 bg-earth rounded-full mr-2"></span> 鐵槌敲擊鐵板作為震源</li>
-                    <li class="flex items-center"><span class="w-1.5 h-1.5 bg-earth rounded-full mr-2"></span> 數位走時分析電腦系統</li>
-                </ul>
-            </div>
-            <div class="rounded-2xl overflow-hidden shadow-xl rotate-1 group">
-                <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/%E5%9C%B0%E7%89%A91.jpg" alt="實驗現場" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
-                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖一：黑森林實驗現場佈置</div>
-            </div>
-        </section>
-
-        <section class="grid md:grid-cols-2 gap-12 items-center">
-            <div class="order-2 md:order-1 rounded-2xl overflow-hidden shadow-xl -rotate-1 group">
-                <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/4.jpg" alt="數據波型" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
-                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖二：檢波器回傳之原始波相</div>
-            </div>
-            <div class="order-1 md:order-2">
-                <h3 class="serif text-2xl mb-6 flex items-center">
-                    <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">02</span>
-                    數據採集與分析
-                </h3>
-                <p>透過敲擊不同炸點（0m, 6m, 12m...），記錄震波到達各檢波器的時間。如圖所示，我們可以觀察到波型的相位變化，進而判讀<strong>初至波 (First Arrival)</strong>。</p>
-                <div class="mt-6 p-4 bg-stone-100 rounded-xl border-l-4 border-stone-300 italic text-sm">
-                    「24 個檢波器的設計是因為其因數眾多，方便我們在分段取距與計算平均值時具有極佳彈性。」
-                </div>
-            </div>
-        </section>
-
-        <section class="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-                <h3 class="serif text-2xl mb-6 flex items-center">
-                    <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">03</span>
-                    走時曲線與速度推算
-                </h3>
-                <p class="mb-4">將數據繪製成 <strong>Time-Distance 圖</strong>。斜率倒數即代表波速。我們成功分離出：</p>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center bg-white px-4 py-2 rounded-lg shadow-sm border border-stone-100">
-                        <span class="font-bold text-earth">直達波 (V1)</span>
-                        <span class="text-stone-400">平均 333.01 m/s</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-white px-4 py-2 rounded-lg shadow-sm border border-stone-100">
-                        <span class="font-bold text-earth">折射波 (V2)</span>
-                        <span class="text-stone-400">平均 813.13 m/s</span>
-                    </div>
-                </div>
-            </div>
-            <div class="rounded-2xl overflow-hidden shadow-xl rotate-1 group">
-                <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/3.jpg" alt="走時曲線" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
-                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖三：走時曲線斜率分析</div>
-            </div>
-        </section>
-
-        <section class="grid md:grid-cols-2 gap-12 items-center">
-            <div class="order-2 md:order-1 rounded-2xl overflow-hidden shadow-xl -rotate-1 group">
-                <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/2.jpg" alt="計算過程" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
-                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖四：最終數據彙整統計</div>
-            </div>
-            <div class="order-1 md:order-2">
-                <h3 class="serif text-2xl mb-6 flex items-center">
-                    <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">04</span>
-                    數據校正與結論
-                </h3>
-                <p class="mb-4 text-sm leading-relaxed">
-                    在分析過程中，我們秉持科學嚴謹度，<strong>剔除了炸點 12m 與 42m 的數據</strong>。這兩組測量值展現了明顯的異常（厚度最大與最小），可能源於地表局部雜訊或耦合不良。
-                </p>
-                <div class="bg-earth text-white p-6 rounded-2xl shadow-inner">
-                    <h4 class="font-bold mb-2">最終結論</h4>
-                    <p class="text-sm opacity-90">推算地層厚度為 <strong>7.67 公尺</strong>。這項結果揭示了校園地底速度不連續面的深度，為後續的地質研究提供了堅實的基底數據。</p>
-                </div>
-            </div>
-        </section>
-
-    </div>
-
-    <footer class="mt-20 border-t border-stone-200 pt-10 flex flex-col md:flex-row gap-8">
-        <div class="flex-1 bg-white/50 p-6 rounded-2xl italic text-stone-500 text-sm">
-            「學到在地形起伏大的區域，必須嚴格考慮高低落差校正，才能還原真實地層。」 —— 陳亞歆
-        </div>
-        <div class="flex-1 bg-white/50 p-6 rounded-2xl italic text-stone-500 text-sm">
-            「敲擊鐵板的那一刻，我感覺自己像是在與大地對話，將震動轉化為科學。」 —— 楊廂甯
-        </div>
-    </footer>
-</div>
-
-                <!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <style>
-        .serif { font-family: 'Noto Serif TC', serif; }
         .bg-earth { background-color: #4A5D4E; }
+
         .text-earth { color: #4A5D4E; }
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease; }
-        .fade-enter-from, .fade-leave-to { opacity: 0; }
-    </style>
-</head>
-<body>
-    <div id="app">
-        <section v-if="currentPage === 'kan'" class="max-w-4xl mx-auto py-12 px-6">
-            <header class="mb-12 border-b border-stone-200 pb-8">
-                <h2 class="serif text-5xl text-stone-800 mb-6">透視地球的聲音：甘禮有博士專題演講</h2>
-            </header>
 
-            <section class="bg-stone-100 p-10 rounded-[2.5rem] mb-16">
-                <h3 class="serif text-2xl mb-8 text-center">【學術邏輯挑戰】你理解老師說的概念嗎？</h3>
-                
-                <div v-if="!quizSolved" class="space-y-6">
-                    <p class="text-center text-stone-500 mb-6 font-medium">問題：科學家如何處理「海上缺乏測站」導致的地震定位困難？</p>
-                    <div class="grid gap-4">
-                        <button @click="checkAnswer('A')" class="w-full py-4 px-6 bg-white hover:bg-earth hover:text-white rounded-2xl transition shadow-sm text-left">
-                            A. 略過不完整的資料，只分析有測站的陸地
-                        </button>
-                        <button @click="checkAnswer('B')" class="w-full py-4 px-6 bg-white hover:bg-earth hover:text-white rounded-2xl transition shadow-sm text-left">
-                            B. 透過「逆推關係」在不確定性中找出最合理解
-                        </button>
-                    </div>
-                </div>
-
-                <transition name="fade">
-                    <div v-if="quizFeedback" class="mt-8 p-6 rounded-2xl" :class="quizCorrect ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'">
-                        <p class="font-bold mb-2">{{ quizCorrect ? '🏆 正確解讀！' : '❌ 值得進一步思考...' }}</p>
-                        <p class="text-sm leading-relaxed">{{ quizFeedback }}</p>
-                        <button v-if="!quizCorrect" @click="quizFeedback = null" class="mt-4 text-xs underline uppercase">再次嘗試</button>
-                    </div>
-                </transition>
-            </section>
-        </section>
-    </div>
-
-    <script>
-        const { createApp, ref } = Vue;
-
-        createApp({
-            setup() {
-                // 1. 原有的狀態變數
-                const currentPage = ref('kan');
-
-                // 2. 合併進來的問答邏輯變數 (JS 部分)
-                const quizFeedback = ref(null);
-                const quizCorrect = ref(false);
-                const quizSolved = ref(false);
-
-                // 3. 合併進來的判斷功能 (JS 部分)
-                const checkAnswer = (choice) => {
-                    if (choice === 'B') {
-                        quizCorrect.value = true;
-                        quizFeedback.value = "這正是演講中提到的關鍵。由於觀測環境不完美（如海上無法設站），我們會面臨『病態問題』。科學家利用逆推關係 (Inversion)，在數學上處理這些不確定性，尋求誤差最小的最佳解。這也解釋了為何地震預警需要快速的時估計。";
-                    } else {
-                        quizCorrect.value = false;
-                        quizFeedback.value = "老師提到，如果因為資料不全就略過，我們將永遠無法理解海洋下的構造。科學的深度在於：即便資料殘缺，我們仍能透過數學逆推與模型約束，推論出具有參考價值的地底拼圖。";
-                    }
-                };
-
-                // 所有的變數和功能都必須在這裡 return，HTML 才能用
-                return {
-                    currentPage,
-                    quizFeedback,
-                    quizCorrect,
-                    quizSolved,
-                    checkAnswer
-                };
-            }
-        }).mount('#app');
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地球物理學實務：學習歷程與互動實驗室</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #fcfaf7; color: #333; }
-        .serif { font-family: 'Noto Serif TC', serif; }
-        .bg-earth { background-color: #4A5D4E; }
-        .text-earth { color: #4A5D4E; }
         .card-hover:hover { transform: translateY(-5px); transition: all 0.3s ease; }
+
         .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease; }
+
         .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+        .timeline-line::before { content: ''; position: absolute; left: 50%; width: 2px; height: 100%; background: #d1d5db; transform: translateX(-50%); z-index: 0; }
+
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
+
     </style>
+
 </head>
+
 <body>
+
     <div id="app" class="min-h-screen">
-        <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-200 px-6 py-4 flex justify-between items-center shadow-sm">
-            <h1 class="text-xl font-bold text-earth tracking-widest cursor-pointer" @click="currentPage = 'home'">GEOPHYSICS HUB</h1>
-            <div class="hidden md:flex space-x-6 text-sm font-medium">
-                <button @click="currentPage = 'field'" :class="{'text-earth font-bold border-b-2 border-earth': currentPage === 'field'}" class="hover:text-earth pb-1 transition">黑森林實驗</button>
-                <button @click="currentPage = 'kan'" :class="{'text-earth font-bold border-b-2 border-earth': currentPage === 'kan'}" class="hover:text-earth pb-1 transition">甘博士演講</button>
-                <button @click="currentPage = 'gravity'" :class="{'text-earth font-bold border-b-2 border-earth': currentPage === 'gravity'}" class="hover:text-earth pb-1 transition">重力計算挑戰</button>
+
+        <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+
+            <h1 class="text-xl font-bold text-earth tracking-widest cursor-pointer uppercase" @click="currentPage = 'home'">Journey to the Center</h1>
+
+            <div class="space-x-6 text-sm font-medium">
+
+                <button @click="currentPage = 'intro'" :class="{'text-earth font-bold': currentPage === 'intro'}" class="hover:text-earth transition">課程簡介</button>
+
+                <button @click="currentPage = 'home'" :class="{'text-earth font-bold': currentPage === 'home'}" class="hover:text-earth transition">學習歷程</button>
+
+                <button @click="currentPage = 'tech'" :class="{'text-earth font-bold': currentPage === 'tech'}" class="hover:text-earth transition">技能庫</button>
+
             </div>
+
         </nav>
+
+
 
         <transition name="fade" mode="out-in">
-            <section v-if="currentPage === 'field'" key="field" class="max-w-4xl mx-auto py-12 px-6">
+
+            <section v-if="currentPage === 'home'" key="home" class="max-w-4xl mx-auto py-12 px-6">
+
                 <header class="text-center mb-16">
-                    <h2 class="serif text-5xl text-stone-800 mb-6">黑森林的震動印記</h2>
-                    <p class="text-stone-500 italic">校園折射震測實驗紀錄</p>
+
+                    <span class="text-earth font-bold tracking-[0.3em] text-xs uppercase mb-2 block">Timeline</span>
+
+                    <h2 class="serif text-4xl mb-4 text-gray-800">各週主題時光軸</h2>
+
+                    <p class="text-gray-500 italic">記錄從理論探索到數位編程的每一哩路</p>
+
                 </header>
 
-                <div class="grid md:grid-cols-3 gap-6 mb-16 text-center">
-                    <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-earth card-hover">
-                        <div class="text-xs text-stone-400 font-bold uppercase mb-2">平均直達波速</div>
-                        <div class="text-3xl font-serif text-earth">333.01 <span class="text-sm">m/s</span></div>
+
+
+                <div class="relative timeline-line">
+
+                    <div v-for="(week, index) in weeks" :key="index" class="relative mb-12 flex items-center justify-between w-full" :class="index % 2 === 0 ? 'flex-row-reverse' : ''">
+
+                        <div class="w-5/12"></div>
+
+                        <div class="z-10 bg-earth text-white w-10 h-10 rounded-full flex items-center justify-center font-bold border-4 border-white shadow-sm">
+
+                            {{ index + 1 }}
+
+                        </div>
+
+                        <div class="w-5/12 bg-white p-6 rounded-2xl shadow-sm card-hover border border-gray-100 cursor-pointer" @click="navigateTo(week.target)">
+
+                            <div class="text-xs text-earth font-bold mb-1">{{ week.date }}</div>
+
+                            <h3 class="font-bold text-lg mb-2">{{ week.title }}</h3>
+
+                            <p class="text-xs text-gray-400 leading-relaxed">{{ week.desc }}</p>
+
+                            <div class="mt-3 flex flex-wrap gap-2">
+
+                                <span v-for="tag in week.tags" :key="tag" class="text-[10px] px-2 py-1 bg-gray-100 text-gray-600 rounded-full">{{ tag }}</span>
+
+                            </div>
+
+                        </div>
+
                     </div>
-                    <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-earth card-hover">
-                        <div class="text-xs text-stone-400 font-bold uppercase mb-2">平均折射波速</div>
-                        <div class="text-3xl font-serif text-earth">813.13 <span class="text-sm">m/s</span></div>
-                    </div>
-                    <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-earth card-hover">
-                        <div class="text-xs text-stone-400 font-bold uppercase mb-2">計算地層厚度</div>
-                        <div class="text-3xl font-serif text-earth">7.67 <span class="text-sm">m</span></div>
-                    </div>
+
                 </div>
 
-                <div class="space-y-20">
-                    <div class="grid md:grid-cols-2 gap-12 items-center">
-                        <div class="rounded-2xl overflow-hidden shadow-xl rotate-1 group">
-                            <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/%E5%9C%B0%E7%89%A91.jpg" class="w-full h-64 object-cover">
-                            <div class="bg-white p-3 text-xs italic text-center">圖一：黑森林實驗佈置</div>
-                        </div>
-                        <div>
-                            <h3 class="serif text-2xl mb-4">01 佈設與擊發</h3>
-                            <p class="text-stone-600 text-sm leading-relaxed">我們在黑森林草地上佈設了 24 個 Geophones，間距 2 公尺。透過鐵槌敲擊鐵板產生震波，模擬微縮版的地震探勘。</p>
-                        </div>
-                    </div>
-
-                    <div class="grid md:grid-cols-2 gap-12 items-center">
-                        <div class="order-2 md:order-1">
-                            <h3 class="serif text-2xl mb-4">02 原始波形紀錄</h3>
-                            <p class="text-stone-600 text-sm leading-relaxed">電腦即時顯示檢波器接收到的訊號。這些跳動的線條是我們判讀 P 波初至時間（First Arrival）的依據。</p>
-                        </div>
-                        <div class="order-1 md:order-2 rounded-2xl overflow-hidden shadow-xl -rotate-1">
-                            <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/4.jpg" class="w-full h-64 object-cover">
-                            <div class="bg-white p-3 text-xs italic text-center">圖二：原始波相數據</div>
-                        </div>
-                    </div>
-
-                    <div class="grid md:grid-cols-2 gap-8">
-                        <div class="bg-white p-4 rounded-2xl shadow-sm">
-                            <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/3.jpg" class="rounded-xl mb-4">
-                            <p class="text-xs text-stone-500 italic">圖三：Time-Distance 走時曲線擬合</p>
-                        </div>
-                        <div class="bg-white p-4 rounded-2xl shadow-sm">
-                            <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/2.jpg" class="rounded-xl mb-4">
-                            <p class="text-xs text-stone-500 italic">圖四：數據統計與異常值剔除 (12m & 42m)</p>
-                        </div>
-                    </div>
-                </div>
             </section>
 
-            <section v-else-if="currentPage === 'kan'" key="kan" class="max-w-4xl mx-auto py-12 px-6">
-                <header class="mb-12 border-b border-stone-200 pb-8">
-                    <h2 class="serif text-5xl text-stone-800 mb-4">地震波的透視術：甘禮有博士</h2>
-                    <p class="text-stone-400 italic">解析層析成像、正演與逆推的邏輯旅程</p>
-                </header>
 
-                <div class="bg-white p-8 rounded-3xl shadow-sm mb-12 border border-stone-100 leading-relaxed text-stone-600">
-                    <p class="mb-4">老師介紹了<strong>正演 (Forward)</strong> 的概念，這對我來說是全新的詞彙。例如合成波圖像中，黑線（理論預測）與紅線（實際觀測）的差異，正是地球結構複雜性的證據。</p>
-                    <p>隨後提到的「病態問題」讓我深感科學家的不易：在有限測站下（如海上設站困難），如何從不完整資料中找出最合理的解答，這需要極高的邏輯與數學運算。</p>
-                </div>
 
-                <div class="bg-stone-100 p-10 rounded-[2.5rem]">
-                    <h3 class="serif text-2xl mb-8 text-center">【甘博士講堂互動】</h3>
-                    <div v-if="!quizSolved" class="space-y-4">
-                        <p class="text-center font-medium mb-6">問題：在海上缺乏測站的情況下，科學家該如何推論地震構造？</p>
-                        <button @click="checkAnswer('A')" class="w-full p-4 bg-white hover:bg-earth hover:text-white rounded-xl transition text-left">A. 僅分析陸地資料，忽略海洋不確定部分</button>
-                        <button @click="checkAnswer('B')" class="w-full p-4 bg-white hover:bg-earth hover:text-white rounded-xl transition text-left">B. 透過「逆推關係」在有限資料中尋找誤差最小解</button>
+            <section v-else class="max-w-5xl mx-auto py-12 px-6">
+
+                <button @click="currentPage = 'home'" class="mb-8 text-sm text-gray-400 hover:text-earth flex items-center">
+
+                    ← 返回時光軸
+
+                </button>
+
+
+
+                <article v-if="currentPage === 'intro'">
+
+                    <h2 class="serif text-4xl mb-8 border-l-4 border-earth pl-6">地心冒險指南：課程深度解析</h2>
+
+                    <p class="text-gray-600 mb-10 leading-relaxed">這是一場關於「數據」與「地球」的對話。課程將長達 6,371 公里的地層秘密，透過 Python 程式碼、AI 大型語言模型與雲端運算進行解碼。</p>
+
+                    
+
+                    <div class="grid md:grid-cols-2 gap-8 mb-12">
+
+                        <div class="bg-white p-8 rounded-3xl shadow-sm border border-stone-100">
+
+                            <h4 class="font-bold mb-4 text-xl flex items-center"><span class="mr-2">🧭</span>上課方式</h4>
+
+                            <p class="text-gray-600 text-sm leading-relaxed mb-6">結合「實體野外測量」與「雲端大數據分析」。我們不只在教室聽課，更走進黑森林架設地震儀，並在 Hugging Face 與 Colab 上實作個人化的地學助手。</p>
+
+                            <ul class="text-sm space-y-2 text-gray-500">
+
+                                <li class="flex items-start"><span class="text-earth mr-2">✓</span> 實地探勘：測量地層厚度與波速</li>
+
+                                <li class="flex items-start"><span class="text-earth mr-2">✓</span> AI 整合：利用 Gemini API 輔助判讀</li>
+
+                                <li class="flex items-start"><span class="text-earth mr-2">✓</span> 數位部署：將研究成果網頁化</li>
+
+                            </ul>
+
+                        </div>
+
+                        <div class="bg-white p-8 rounded-3xl shadow-sm border border-stone-100">
+
+                            <h4 class="font-bold mb-4 text-xl flex items-center"><span class="mr-2">📊</span>成績計算</h4>
+
+                            <div class="space-y-6">
+
+                                <div>
+
+                                    <div class="flex justify-between text-xs mb-2"><span>平時作業與實作報告</span><span class="font-bold">40%</span></div>
+
+                                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-earth w-[40%]"></div></div>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="flex justify-between text-xs mb-2"><span>期中理論評量</span><span class="font-bold">20%</span></div>
+
+                                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-earth w-[20%]"></div></div>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="flex justify-between text-xs mb-2"><span>期末互動專題發表</span><span class="font-bold">40%</span></div>
+
+                                    <div class="h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full bg-earth w-[40%]"></div></div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
 
-                    <transition name="fade">
-                        <div v-if="quizFeedback" class="mt-8 p-6 rounded-2xl" :class="quizCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                            <p class="font-bold">{{ quizCorrect ? '🏆 正確解讀！' : '❌ 值得進一步思考...' }}</p>
-                            <p class="text-sm mt-2">{{ quizFeedback }}</p>
-                            <button v-if="!quizCorrect" @click="quizFeedback = null" class="mt-4 text-xs underline uppercase">再次嘗試</button>
-                        </div>
-                    </transition>
-                </div>
-            </section>
 
-         <div v-else-if="currentPage === 'gravity'" key="gravity" class="max-w-4xl mx-auto py-12 px-6">
-    <header class="mb-12 border-b border-stone-200 pb-8 text-center">
-        <h2 class="serif text-5xl text-stone-800 mb-6">重力異常：秤出大地的重量</h2>
-        <p class="text-stone-400 italic text-lg">理解修正後的數值如何揭露地底的物質分佈</p>
+
+                    <div class="bg-earth text-white p-10 rounded-3xl">
+
+                        <h4 class="serif text-2xl mb-6">核心學習模組 (Core Skills)</h4>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
+
+                            <div class="opacity-90">
+
+                                <p class="font-bold mb-2 text-lg">數位編程力</p>
+
+                                <p>掌握 Python, ObsPy 與 PyGMT，將震波與地磁數據視覺化。</p>
+
+                            </div>
+
+                            <div class="opacity-90">
+
+                                <p class="font-bold mb-2 text-lg">野外實踐力</p>
+
+                                <p>從地震儀佈設到數據增益，真實採集大地律動。</p>
+
+                            </div>
+
+                            <div class="opacity-90">
+
+                                <p class="font-bold mb-2 text-lg">AI 應用力</p>
+
+                                <p>藉由AI撰寫Github的網頁程式碼。</p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+<div v-else-if="currentPage === 'codespace'" key="codespace" class="max-w-4xl mx-auto py-12 px-6">
+
+    <header class="mb-12 border-b border-stone-200 pb-8">
+
+        <h2 class="serif text-5xl text-stone-800 mb-6">數位地球物理實驗室</h2>
+
+        <p class="text-stone-400 italic text-lg tracking-wide">雲端 Codespace 與 Python 地震學工具鏈教學</p>
+
     </header>
 
-    <div class="grid md:grid-cols-3 gap-6 mb-16">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-            <h4 class="font-bold text-earth mb-2">1. 理論重力 (Gt)</h4>
-            <p class="text-xs text-stone-500 leading-relaxed">考量地球自轉與橢球形狀。隨緯度變化：兩極較重，赤道較輕。</p>
-        </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-            <h4 class="font-bold text-earth mb-2">2. 自由空間 (FAC)</h4>
-            <p class="text-xs text-stone-500 leading-relaxed">考量「高度」影響。每上升一公尺，距離地心越遠，重力約減小 0.3086 mGal。</p>
-        </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-            <h4 class="font-bold text-earth mb-2">3. 布格改正 (BC)</h4>
-            <p class="text-xs text-stone-500 leading-relaxed">考量「中間介質」。扣除觀測點與海平面之間多出來的岩石質量（密度 ρ 通常取 2.67）。</p>
-        </div>
-    </div>
 
-    <section class="bg-stone-800 text-stone-100 p-10 rounded-[2.5rem] shadow-2xl mb-16">
-        <div class="flex items-center justify-between mb-8">
-            <h3 class="serif text-2xl text-white">【重力挑戰賽】計算布格重力異常</h3>
-            <span class="px-3 py-1 bg-earth text-xs rounded-full">難度：中級</span>
-        </div>
 
-        <div class="grid md:grid-cols-2 gap-12 items-center">
-            <div class="space-y-6 text-stone-800">
-                <div>
-                    <label class="block text-xs uppercase tracking-widest text-stone-400 mb-2 font-bold">實測重力 (Gobs) - mGal</label>
-                    <input v-model.number="game.obs" type="number" step="0.1" class="w-full bg-stone-700 border-none rounded-xl p-3 text-white focus:ring-2 focus:ring-earth outline-none">
+    <section class="mb-16">
+
+        <h3 class="serif text-2xl mb-6 flex items-center text-earth">
+
+            <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">01</span>
+
+            環境準備：Fork 與啟動
+
+        </h3>
+
+        <div class="grid md:grid-cols-2 gap-8">
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+
+                <p class="font-bold mb-2">1. 建立個人副本</p>
+
+                <p class="text-sm text-stone-500 mb-4">進入老師的 <a href="https://github.com/cwbdayi638/geophysics-class-2025" target="_blank" class="text-earth underline">GitHub Repo</a>，點擊右上角 <strong>Fork</strong>。</p>
+
+                <div class="bg-stone-50 p-3 rounded-lg border border-stone-200 text-xs italic text-center">
+
+                    這會在你的帳號下生成一份完全相同的代碼副本。
+
                 </div>
-                <div>
-                    <label class="block text-xs uppercase tracking-widest text-stone-400 mb-2 font-bold">理論重力 (Gt) - mGal</label>
-                    <input v-model.number="game.theory" type="number" step="0.1" class="w-full bg-stone-700 border-none rounded-xl p-3 text-white focus:ring-2 focus:ring-earth outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs uppercase tracking-widest text-stone-400 mb-2 font-bold">海拔高度 (h) - 公尺</label>
-                    <input v-model.number="game.height" type="number" class="w-full bg-stone-700 border-none rounded-xl p-3 text-white focus:ring-2 focus:ring-earth outline-none">
-                </div>
-                <button @click="calculateGravityChallenge" class="w-full bg-white text-stone-800 font-bold py-4 rounded-xl hover:bg-earth hover:text-white transition shadow-lg active:scale-95">
-                    計算最終結果
-                </button>
+
             </div>
 
-            <div class="bg-stone-700/50 p-8 rounded-3xl border border-stone-600 border-dashed min-h-[300px] flex flex-col justify-center">
-                <div v-if="game.result === null" class="text-center text-stone-500 italic">
-                    請輸入數據後點擊計算...<br>提示：假設密度 ρ = 2.67 g/cm³
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+
+                <p class="font-bold mb-2">2. 開啟雲端環境</p>
+
+                <p class="text-sm text-stone-500 mb-4">點擊綠色 <strong>&lt;&gt; Code</strong> 按鈕，選擇 <strong>Create codespace on main</strong>。</p>
+
+                <div class="flex items-center text-xs text-amber-600 bg-amber-50 p-2 rounded-lg">
+
+                    <span>🕒 等待約 1-2 分鐘讓環境自動安裝 ObsPy 與 PyGMT。</span>
+
                 </div>
-                <div v-else class="space-y-4">
-                    <div class="flex justify-between border-b border-stone-600 pb-2">
-                        <span class="text-sm">自由空間改正值 (FAC)：</span>
-                        <span class="text-green-400 font-mono font-bold">+{{ game.fac.toFixed(2) }} mGal</span>
-                    </div>
-                    <div class="flex justify-between border-b border-stone-600 pb-2">
-                        <span class="text-sm">布格改正值 (BC)：</span>
-                        <span class="text-red-400 font-mono font-bold">-{{ game.bc.toFixed(2) }} mGal</span>
-                    </div>
-                    <div class="pt-4 text-center">
-                        <div class="text-xs text-stone-400 uppercase mb-1 font-bold">布格異常 (ΔgB)</div>
-                        <div class="text-5xl font-serif text-white">{{ game.result.toFixed(2) }} <span class="text-sm">mGal</span></div>
-                    </div>
-                    <div class="mt-4 p-4 bg-stone-800/80 rounded-lg text-sm leading-relaxed text-stone-200 border border-stone-600">
-                        <span class="text-earth font-bold">💡 物理意義：</span> {{ game.interpretation }}
-                    </div>
-                </div>
+
             </div>
+
         </div>
+
     </section>
 
-    <div class="bg-white p-10 rounded-3xl border border-stone-100 shadow-sm">
-        <h3 class="serif text-2xl mb-6 text-stone-800">公式筆記：</h3>
-        <div class="font-mono text-sm space-y-4 bg-stone-50 p-6 rounded-xl text-stone-600">
-            <p class="flex items-center"><span class="w-2 h-2 bg-earth rounded-full mr-3"></span> 1. 自由空間改正 (FAC) = 0.3086 × h</p>
-            <p class="flex items-center"><span class="w-2 h-2 bg-earth rounded-full mr-3"></span> 2. 布格改正 (BC) = 0.04193 × ρ × h</p>
-            <p class="flex items-center"><span class="w-2 h-2 bg-earth rounded-full mr-3"></span> 3. 布格異常 = Gobs - Gt + FAC - BC</p>
+
+
+    <section class="mb-16 bg-stone-100 p-8 rounded-[2.5rem]">
+
+        <h3 class="serif text-2xl mb-6 flex items-center">
+
+            <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">02</span>
+
+            撰寫作業：AI 輔助開發
+
+        </h3>
+
+        <div class="space-y-6">
+
+            <div class="bg-white p-6 rounded-2xl shadow-md">
+
+                <p class="text-sm font-bold text-stone-700 mb-3">📍 目錄：<code>/hw/hw_01</code> | 檔名：<code>HW01_學號.ipynb</code></p>
+
+                <div class="grid md:grid-cols-2 gap-6">
+
+                    <div class="border-l-4 border-blue-400 pl-4">
+
+                        <h4 class="font-bold text-blue-600 mb-2">ObsPy：地震波分析</h4>
+
+                        <p class="text-xs text-stone-500 mb-3">利用 AI 輔助輸入波形讀取指令：</p>
+
+                        <pre class="bg-stone-800 text-stone-100 p-3 rounded-lg text-[10px] overflow-x-auto">
+
+# AI Prompt 範例:
+
+# "請幫我用 obspy 讀取地震數據
+
+# 並繪製濾波後的地震走時圖"
+
+st = obspy.read()
+
+st.filter("bandpass", freqmin=1, freqmax=10)
+
+st.plot()</pre>
+
+                    </div>
+
+                    <div class="border-l-4 border-green-400 pl-4">
+
+                        <h4 class="font-bold text-green-600 mb-2">PyGMT：地圖繪製</h4>
+
+                        <p class="text-xs text-stone-500 mb-3">利用 AI 輔助輸入地形圖繪製指令：</p>
+
+                        <pre class="bg-stone-800 text-stone-100 p-3 rounded-lg text-[10px] overflow-x-auto">
+
+# AI Prompt 範例:
+
+# "請幫我用 pygmt 繪製台灣地圖
+
+# 並標註震央位置"
+
+fig = pygmt.Figure()
+
+fig.grdimage(grid="@earth_day_01m")
+
+fig.plot(x=lon, y=lat, style="c0.3c")</pre>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
-    </div>
+
+    </section>
+
+
+
+    <section class="mb-16">
+
+        <h3 class="serif text-2xl mb-6 flex items-center text-earth">
+
+            <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">03</span>
+
+            提交作業：Git 指令與 PR
+
+        </h3>
+
+        
+
+        <div class="space-y-4">
+
+            <div class="bg-stone-900 rounded-2xl p-6 shadow-xl">
+
+                <div class="flex items-center mb-4">
+
+                    <div class="flex space-x-2 mr-4">
+
+                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+
+                    </div>
+
+                    <span class="text-stone-500 font-mono text-xs">Terminal - Codespace</span>
+
+                </div>
+
+                <div class="font-mono text-sm space-y-2">
+
+                    <p class="text-stone-400"># 使用老師提供的快捷指令上傳</p>
+
+                    <p class="text-white">sh /workspaces/geophysics-class-2025/./git_all.sh <span class="text-yellow-400">"update HW1-學號"</span></p>
+
+                    <p class="text-stone-400 mt-4"># 或者手動標準流程：</p>
+
+                    <p class="text-white">git add .</p>
+
+                    <p class="text-white">git commit -m <span class="text-yellow-400">"完成 HW1"</span></p>
+
+                    <p class="text-white">git push</p>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="bg-white p-8 rounded-3xl border border-stone-200">
+
+                <h4 class="font-bold mb-4 flex items-center text-stone-800">
+
+                    <span class="mr-2">🚀</span> 建立 Pull Request (PR) 繳交作業
+
+                </h4>
+
+                <ol class="text-sm text-stone-600 space-y-3 list-decimal pl-5 leading-relaxed">
+
+                    <li>回到你的 GitHub 頁面，點擊 <strong>Contribute → Open pull request</strong>。</li>
+
+                    <li>確認左側 Base 為老師的 Repo，右側 Head 為你的 Fork Repo。</li>
+
+                    <li><strong>重點：</strong> 仔細填寫標題與內容，附上你的 <strong>ObsPy/PyGMT 結果圖</strong>，並寫下你的觀察。</li>
+
+                    <li>點擊 <strong>Create pull request</strong>，看到「Open」標籤即代表繳交成功！</li>
+
+                </ol>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <footer class="bg-earth/10 p-8 rounded-3xl border border-earth/20">
+
+        <h4 class="font-bold text-earth mb-2">🔔 批改與回饋</h4>
+
+        <p class="text-sm text-stone-600 leading-relaxed">
+
+            老師會在 PR 頁面留言。若需要修改（Request changes），直接在 Codespace 更新程式並再次 <strong>Push</strong> 即可，PR 內容會自動同步。
+
+        </p>
+
+    </footer>
+
 </div>
 
-<script>
-// --- JavaScript 邏輯部分 (需放入 Vue setup 或 data 中) ---
 
-// 1. 定義反應式狀態 (Reactive State)
-const game = ref({
-    obs: 978900.5,
-    theory: 979000.0,
-    height: 150,
-    fac: 0,
-    bc: 0,
-    result: null,
-    interpretation: ""
-});
 
-// 2. 定義計算邏輯 (Method)
-const calculateGravityChallenge = () => {
-    const rho = 2.67;
-    
-    // 計算 FAC (每公尺改正 0.3086 mGal)
-    game.value.fac = 0.3086 * game.value.height;
-    
-    // 計算 BC (布格平板改正公式)
-    game.value.bc = 0.04193 * rho * game.value.height;
-    
-    // 計算最終異常值: 實測 - 理論 + 自由空間改正 - 布格改正
-    game.value.result = game.value.obs - game.value.theory + game.value.fac - game.value.bc;
+<div v-else-if="currentPage === 'field'" key="field" class="max-w-4xl mx-auto py-10 px-4">
 
-    // 根據結果給予專業物理見解
-    if (game.value.result > 5) {
-        game.value.interpretation = "結果為正異常！這表示地底下可能埋藏著密度較高的物質（例如：玄武岩基盤、高密度礦體或地殼變薄處）。";
-    } else if (game.value.result < -5) {
-        game.value.interpretation = "結果為負異常！這暗示地底可能存在較輕的物質，或是存在巨厚的沉積盆地，甚至是地殼向下增厚的結果。";
-    } else {
-        game.value.interpretation = "數值接近零，表示實測值經修正後與理論模型吻合，代表該處地質結構均勻且符合地殼均衡。";
-    }
-};
+    <header class="text-center mb-16">
 
-    <!DOCTYPE html>
-<html lang="zh-Hant">
+        <h2 class="serif text-5xl text-stone-800 mb-6">黑森林的震動印記</h2>
+
+        <p class="text-stone-500 italic tracking-widest text-lg">—— 校園折射震測實驗報告 (第五組) ——</p>
+
+    </header>
+
+
+
+    <div class="grid md:grid-cols-3 gap-6 mb-16">
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-earth card-hover text-center">
+
+            <div class="text-xs text-stone-400 font-bold uppercase mb-2">平均直達波速</div>
+
+            <div class="text-3xl font-serif text-earth">333.01 <span class="text-sm">m/s</span></div>
+
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-earth card-hover text-center">
+
+            <div class="text-xs text-stone-400 font-bold uppercase mb-2">平均折射波速</div>
+
+            <div class="text-3xl font-serif text-earth">813.13 <span class="text-sm">m/s</span></div>
+
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-earth card-hover text-center">
+
+            <div class="text-xs text-stone-400 font-bold uppercase mb-2">計算地層厚度</div>
+
+            <div class="text-3xl font-serif text-earth">7.67 <span class="text-sm">m</span></div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="space-y-20 text-stone-700 leading-relaxed">
+
+        
+
+        <section class="grid md:grid-cols-2 gap-12 items-center">
+
+            <div>
+
+                <h3 class="serif text-2xl mb-6 flex items-center">
+
+                    <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">01</span>
+
+                    實驗目的與設備
+
+                </h3>
+
+                <p class="mb-4">本次實驗旨在探測從<strong>黑森林至圖書館後方</strong>的地層結構。我們利用人工擊發震波，測量地層厚度及波速（V1, V2）。</p>
+
+                <ul class="space-y-2 text-sm text-stone-500">
+
+                    <li class="flex items-center"><span class="w-1.5 h-1.5 bg-earth rounded-full mr-2"></span> 24 個 Geophones (間距 2m, 全長 48m)</li>
+
+                    <li class="flex items-center"><span class="w-1.5 h-1.5 bg-earth rounded-full mr-2"></span> 鐵槌敲擊鐵板作為震源</li>
+
+                    <li class="flex items-center"><span class="w-1.5 h-1.5 bg-earth rounded-full mr-2"></span> 數位走時分析電腦系統</li>
+
+                </ul>
+
+            </div>
+
+            <div class="rounded-2xl overflow-hidden shadow-xl rotate-1 group">
+
+                <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/%E5%9C%B0%E7%89%A91.jpg" alt="實驗現場" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+
+                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖一：黑森林實驗現場佈置</div>
+
+            </div>
+
+        </section>
+
+
+
+        <section class="grid md:grid-cols-2 gap-12 items-center">
+
+            <div class="order-2 md:order-1 rounded-2xl overflow-hidden shadow-xl -rotate-1 group">
+
+                <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/4.jpg" alt="數據波型" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+
+                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖二：檢波器回傳之原始波相</div>
+
+            </div>
+
+            <div class="order-1 md:order-2">
+
+                <h3 class="serif text-2xl mb-6 flex items-center">
+
+                    <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">02</span>
+
+                    數據採集與分析
+
+                </h3>
+
+                <p>透過敲擊不同炸點（0m, 6m, 12m...），記錄震波到達各檢波器的時間。如圖所示，我們可以觀察到波型的相位變化，進而判讀<strong>初至波 (First Arrival)</strong>。</p>
+
+                <div class="mt-6 p-4 bg-stone-100 rounded-xl border-l-4 border-stone-300 italic text-sm">
+
+                    「24 個檢波器的設計是因為其因數眾多，方便我們在分段取距與計算平均值時具有極佳彈性。」
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <section class="grid md:grid-cols-2 gap-12 items-center">
+
+            <div>
+
+                <h3 class="serif text-2xl mb-6 flex items-center">
+
+                    <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">03</span>
+
+                    走時曲線與速度推算
+
+                </h3>
+
+                <p class="mb-4">將數據繪製成 <strong>Time-Distance 圖</strong>。斜率倒數即代表波速。我們成功分離出：</p>
+
+                <div class="space-y-3">
+
+                    <div class="flex justify-between items-center bg-white px-4 py-2 rounded-lg shadow-sm border border-stone-100">
+
+                        <span class="font-bold text-earth">直達波 (V1)</span>
+
+                        <span class="text-stone-400">平均 333.01 m/s</span>
+
+                    </div>
+
+                    <div class="flex justify-between items-center bg-white px-4 py-2 rounded-lg shadow-sm border border-stone-100">
+
+                        <span class="font-bold text-earth">折射波 (V2)</span>
+
+                        <span class="text-stone-400">平均 813.13 m/s</span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="rounded-2xl overflow-hidden shadow-xl rotate-1 group">
+
+                <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/3.jpg" alt="走時曲線" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+
+                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖三：走時曲線斜率分析</div>
+
+            </div>
+
+        </section>
+
+
+
+        <section class="grid md:grid-cols-2 gap-12 items-center">
+
+            <div class="order-2 md:order-1 rounded-2xl overflow-hidden shadow-xl -rotate-1 group">
+
+                <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/2.jpg" alt="計算過程" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
+
+                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖四：最終數據彙整統計</div>
+
+            </div>
+
+            <div class="order-1 md:order-2">
+
+                <h3 class="serif text-2xl mb-6 flex items-center">
+
+                    <span class="bg-earth text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">04</span>
+
+                    數據校正與結論
+
+                </h3>
+
+                <p class="mb-4 text-sm leading-relaxed">
+
+                    在分析過程中，我們秉持科學嚴謹度，<strong>剔除了炸點 12m 與 42m 的數據</strong>。這兩組測量值展現了明顯的異常（厚度最大與最小），可能源於地表局部雜訊或耦合不良。
+
+                </p>
+
+                <div class="bg-earth text-white p-6 rounded-2xl shadow-inner">
+
+                    <h4 class="font-bold mb-2">最終結論</h4>
+
+                    <p class="text-sm opacity-90">推算地層厚度為 <strong>7.67 公尺</strong>。這項結果揭示了校園地底速度不連續面的深度，為後續的地質研究提供了堅實的基底數據。</p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+    </div>
+
+
+
+    <footer class="mt-20 border-t border-stone-200 pt-10 flex flex-col md:flex-row gap-8">
+
+        <div class="flex-1 bg-white/50 p-6 rounded-2xl italic text-stone-500 text-sm">
+
+            「學到在地形起伏大的區域，必須嚴格考慮高低落差校正，才能還原真實地層。」 —— 陳亞歆
+
+        </div>
+
+        <div class="flex-1 bg-white/50 p-6 rounded-2xl italic text-stone-500 text-sm">
+
+            「敲擊鐵板的那一刻，我感覺自己像是在與大地對話，將震動轉化為科學。」 —— 楊廂甯
+
+        </div>
+
+    </footer>
+
+</div>
+
+
+
+              <!DOCTYPE html>
+
+<html lang="zh-TW">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>地學札記｜非洲板塊與現代監測</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-color: #f8f5f0; /* 米白紙張色 */
-      --text-main: #332f2c; /* 深咖啡色文字 */
-      --accent-color: #a67c52; /* 暖木色 */
-      --card-bg: #ffffff;
-      --border-color: #e2dcd3;
-    }
 
-    * { box-sizing: border-box; }
+    <meta charset="UTF-8">
 
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      font-family: 'Noto Sans TC', sans-serif;
-      line-height: 1.7;
-    }
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    .serif { font-family: 'Noto Serif TC', serif; }
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 
-    .shell {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 4rem 2rem;
-    }
+    <style>
 
-    header {
-      text-align: center;
-      margin-bottom: 5rem;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 2rem;
-    }
+        .serif { font-family: 'Noto Serif TC', serif; }
 
-    header h1 {
-      font-size: 2.8rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      margin-bottom: 1rem;
-    }
+        .bg-earth { background-color: #4A5D4E; }
 
-    header p {
-      color: #7c7267;
-      font-style: italic;
-      max-width: 700px;
-      margin: 0 auto;
-    }
+        .text-earth { color: #4A5D4E; }
 
-    main {
-      display: flex;
-      flex-direction: column;
-      gap: 4rem;
-    }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease; }
 
-    .card {
-      background: var(--card-bg);
-      border-radius: 2px; /* 捨棄圓角，改用直角更有手札感 */
-      padding: 2.5rem;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-      border: 1px solid var(--border-color);
-    }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-    .card-title {
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
-      border-left: 4px solid var(--accent-color);
-      padding-left: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    </style>
 
-    .badge {
-      font-size: 0.75rem;
-      font-weight: normal;
-      background: #f0ede6;
-      padding: 0.2rem 0.8rem;
-      color: var(--accent-color);
-      border-radius: 50px;
-    }
-
-    /* 地圖展示區 */
-    .map-tabs, .code-tabs {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid #f0f0f0;
-    }
-
-    .map-tab-btn, .code-tab-btn {
-      background: none;
-      border: none;
-      padding: 0.5rem 0;
-      cursor: pointer;
-      font-size: 0.9rem;
-      color: #999;
-      position: relative;
-      transition: 0.3s;
-    }
-
-    .map-tab-btn.active, .code-tab-btn.active {
-      color: var(--accent-color);
-      font-weight: bold;
-    }
-
-    .map-tab-btn.active::after, .code-tab-btn.active::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: var(--accent-color);
-    }
-
-    .map-frame {
-      background: #fdfdfd;
-      border: 1px solid #f0f0f0;
-      margin: 1.5rem 0;
-    }
-
-    .map-frame img {
-      width: 100%;
-      height: auto;
-      filter: sepia(10%); /* 微微的舊照片感 */
-    }
-
-    .map-caption {
-      font-size: 0.85rem;
-      color: #8c8c8c;
-      text-align: center;
-      font-style: italic;
-    }
-
-    /* 下拉選單與程式碼 */
-    .plate-select, .quiz-select {
-      width: 100%;
-      padding: 0.8rem;
-      border: 1px solid var(--border-color);
-      background: #fafafa;
-      margin: 1rem 0;
-      font-family: inherit;
-    }
-
-    pre {
-      background: #2d2d2d;
-      color: #ccc;
-      padding: 1.5rem;
-      overflow-x: auto;
-      font-size: 0.85rem;
-      border-radius: 4px;
-    }
-
-    .code-block { display: none; }
-    .code-block.active { display: block; }
-
-    /* 邊界卡片 */
-    .boundary-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-top: 2rem;
-    }
-
-    .boundary-card {
-      padding: 1.5rem;
-      background: #fbfaf8;
-      border-bottom: 2px solid var(--border-color);
-    }
-
-    .boundary-type {
-      color: var(--accent-color);
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      display: block;
-    }
-
-    /* 11/05 新增區塊樣式 */
-    .new-section {
-      background: #332f2c;
-      color: #e2dcd3;
-      padding: 3rem;
-    }
-
-    .new-section h3 { color: #d4a373; margin-top: 0; }
-
-    /* 測驗區 */
-    .quiz {
-      background: #f0ede6;
-      padding: 1.5rem;
-      margin-top: 2rem;
-    }
-
-    .quiz-btn {
-      background: var(--accent-color);
-      color: white;
-      border: none;
-      padding: 0.6rem 1.5rem;
-      cursor: pointer;
-    }
-
-    footer {
-      margin-top: 5rem;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #999;
-      letter-spacing: 0.05em;
-    }
-
-    hr { border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0; }
-  </style>
 </head>
+
 <body>
 
-<div class="shell">
-  <header>
-    <h1 class="serif">地學札記</h1>
-    <p>從非洲板塊的宏觀張裂，到深度學習對震波的微觀判讀</p>
-  </header>
+    <div id="app">
 
-  <main>
-    <section class="card new-section">
-      <div class="serif" style="font-size: 0.9rem; color: #a67c52; margin-bottom: 0.5rem;">Nov. 05, 2024</div>
-      <h3 class="serif" style="font-size: 1.8rem;">地震監測的數位革命：深度學習</h3>
-      <p style="font-size: 0.95rem; opacity: 0.9;">
-        廖勿渝博士向我們展示了當代地震學的最前線。傳統人工判讀（Manual Picking）在面對如花蓮地震等海量餘震時，往往顯得力不從心。透過 **Deep Learning（深度學習）**，系統能以統一且穩定的基準，在四面八方的複雜訊號中精準抓出 P 波與 S 波。這不僅是技術的突破，更是守護人身安全的黃金秒數。
-      </p>
-      <div style="font-size: 0.8rem; border-top: 1px solid #555; pt-3; margin-top: 1rem; color: #999;">
-        關鍵字：AI 監測、盲斷層拼圖、自動化相次辨識
-      </div>
-    </section>
+        <section v-if="currentPage === 'kan'" class="max-w-4xl mx-auto py-12 px-6">
 
-    <section class="card">
-      <div class="card-title serif">
-        非洲板塊地圖展示
-        <span class="badge">PyGMT 互動</span>
-      </div>
+            <header class="mb-12 border-b border-stone-200 pb-8">
 
-      <div class="map-tabs">
-        <button class="map-tab-btn active" data-map="topo">地形圖</button>
-        <button class="map-tab-btn" data-map="quakes">地形 + 歷史強震</button>
-        <button class="map-tab-btn" data-map="globe">球面投影 + 熱點</button>
-      </div>
+                <h2 class="serif text-5xl text-stone-800 mb-6">透視地球的聲音：甘禮有博士專題演講</h2>
 
-      <div class="map-frame">
-        <img id="mapImage" src="https://raw.githubusercontent.com/yaxin06/plot_plate_boundary_pygmt/main/%E5%9C%B0%E5%BD%A2%E5%9C%96.png" alt="地形圖">
-      </div>
-      <p id="mapCaption" class="map-caption">使用 02m 解析度的 Earth relief，觀察非洲板塊附近的地形起伏。</p>
+            </header>
 
-      <hr>
 
-      <div class="serif" style="font-size: 1.1rem; margin-bottom: 0.5rem;">板塊百科對照</div>
-      <select id="plateSelect" class="plate-select">
-        <option value="Africa">Africa（非洲板塊）</option>
-        <option value="Pacific">Pacific（太平洋板塊）</option>
-        <option value="Eurasia">Eurasia（歐亞板塊）</option>
-        <option value="NorthAmerica">North America（北美板塊）</option>
-        <option value="SouthAmerica">South America（南美板塊）</option>
-        <option value="Nazca">Nazca（納斯卡板塊）</option>
-        <option value="India">India（印度板塊）</option>
-      </select>
 
-      <div id="plateTitle" class="serif" style="font-weight: bold; color: var(--accent-color);">Africa（非洲板塊）</div>
-      <p id="plateText" style="font-size: 0.9rem; color: #555;">
-        非洲板塊是面積最大的岩石圈板塊之一，包含非洲大陸與部分周邊海洋地殼。中央多為穩定的陸塊，但在東非裂谷帶可看到明顯的張裂型地形。
-      </p>
-    </section>
+            <section class="bg-stone-100 p-10 rounded-[2.5rem] mb-16">
 
-    <section class="card">
-      <div class="card-title serif">PyGMT 繪圖邏輯</div>
-      
-      <div class="code-tabs">
-        <button class="code-tab-btn active" data-code="code1">地形圖</button>
-        <button class="code-tab-btn" data-code="code2">歷史強震</button>
-        <button class="code-tab-btn" data-code="code3">球面熱點</button>
-      </div>
+                <h3 class="serif text-2xl mb-8 text-center">【學術邏輯挑戰】你理解老師說的概念嗎？</h3>
 
-      <div id="code1" class="code-block active">
-        <pre><code># 載入地形資料
-grid = load_earth_relief(resolution="02m", region="-30/60/-40/40")
-fig = pygmt.Figure()
-fig.grdimage(grid=grid, cmap="geo", shading=True)</code></pre>
-      </div>
-
-      <div id="code2" class="code-block">
-        <pre><code># 疊加強震點位
-fig.plot(data="quakes_africa.txt", style="c0.25c", fill="red")</code></pre>
-      </div>
-
-      <div id="code3" class="code-block">
-        <pre><code># 球面投影 Orthographic
-fig.basemap(region="g", projection="G20/5/14c")</code></pre>
-      </div>
-
-      <div class="boundary-grid">
-        <div class="boundary-card">
-          <span class="boundary-type">Divergent</span>
-          <h4 class="serif">東非裂谷系統</h4>
-          <p style="font-size: 0.85rem; color: #666;">內部張裂帶，未來可能形成新洋盆，伴隨火山與淺層地震。</p>
-        </div>
-        <div class="boundary-card">
-          <span class="boundary-type">Convergent</span>
-          <h4 class="serif">地中海帶</h4>
-          <p style="font-size: 0.85rem; color: #666;">向北與歐亞板塊碰撞，形成褶皺造山與頻繁地震。</p>
-        </div>
-      </div>
-
-      <div class="quiz">
-        <div class="serif" style="margin-bottom: 0.5rem;">互動思考：東非裂谷屬於？</div>
-        <select id="quizSelect" class="quiz-select">
-          <option value="">請選擇類型</option>
-          <option value="convergent">聚合型（Convergent）</option>
-          <option value="divergent">張裂型（Divergent）</option>
-          <option value="transform">保守型（Transform）</option>
-        </select>
-        <button id="quizBtn" class="quiz-btn serif">確認答案</button>
-        <div id="quizResult" style="margin-top: 1rem; font-size: 0.9rem;"></div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    &copy; 2024 Geophysics Report | 陳亞歆 U11310002
-  </footer>
-</div>
-
-<script>
-  // 地圖切換邏輯
-  const mapConfig = {
-    topo: {
-      src: "https://raw.githubusercontent.com/yaxin06/plot_plate_boundary_pygmt/main/%E5%9C%B0%E5%BD%A2%E5%9C%96.png",
-      caption: "「地形圖」：使用 02m 解析度的 Earth relief。"
-    },
-    quakes: {
-      src: "https://raw.githubusercontent.com/yaxin06/plot_plate_boundary_pygmt/main/%E8%9E%A2%E5%B9%95%E6%93%B7%E5%8F%96%E7%95%AB%E9%9D%A2%202025-12-03%20143817.png",
-      caption: "「地形 + 歷史強震」：疊加歷史強震分布，觀察板塊邊界關係。"
-    },
-    globe: {
-      src: "https://raw.githubusercontent.com/yaxin06/plot_plate_boundary_pygmt/main/%E8%9E%A2%E5%B9%95%E6%93%B7%E5%8F%96%E7%95%AB%E9%9D%A2%202025-12-03%20143543.png",
-      caption: "「球面投影」：標示全球位置與主要熱點。"
-    }
-  };
-
-  document.querySelectorAll('.map-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const cfg = mapConfig[btn.dataset.map];
-      document.getElementById('mapImage').src = cfg.src;
-      document.getElementById('mapCaption').textContent = cfg.caption;
-      document.querySelectorAll('.map-tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-
-  // 程式碼切換邏輯
-  document.querySelectorAll('.code-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.code-block').forEach(block => block.classList.remove('active'));
-      document.getElementById(btn.dataset.code).classList.add('active');
-      document.querySelectorAll('.code-tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    });
-  });
-
-  // 板塊百科文字
-  const plateData = {
-    Africa: { title: "Africa（非洲板塊）", text: "非洲板塊包含非洲大陸與部分周邊海洋地殼。在東非裂谷、紅海與大西洋中洋脊一帶，可看到明顯的張裂型邊界。" },
-    Pacific: { title: "Pacific（太平洋板塊）", text: "大部分為海洋地殼，周圍環太平洋帶為聚合型邊界，是地震與火山最活躍的區域。" },
-    Eurasia: { title: "Eurasia（歐亞板塊）", text: "包含歐亞大部分陸塊，與非洲、印度等板塊碰撞形成造山帶。" }
-  };
-
-  document.getElementById('plateSelect').addEventListener('change', (e) => {
-    const info = plateData[e.target.value] || plateData.Africa;
-    document.getElementById('plateTitle').textContent = info.title;
-    document.getElementById('plateText').textContent = info.text;
-  });
-
-  // 測驗邏輯
-  document.getElementById('quizBtn').addEventListener('click', () => {
-    const ans = document.getElementById('quizSelect').value;
-    const res = document.getElementById('quizResult');
-    if (ans === 'divergent') {
-      res.innerHTML = "🕊️ <span style='color: #a67c52'>正確。這是一段正在張裂的大地故事。</span>";
-    } else {
-      res.innerHTML = "☁️ <span style='color: #999'>再讀一次札記內容看看？</span>";
-    }
-  });
-</script>
-
-</body>
-</html>
-// 確保在 return 中包含這兩者
-// return { game, calculateGravityChallenge, ... };
-</script>
-              <div v-else-if="currentPage === 'volcano'" key="volcano" class="max-w-4xl mx-auto py-10 px-4">
-    <header class="text-center mb-16">
-        <h2 class="serif text-5xl text-stone-800 mb-6">阿蘇火山的深層密碼</h2>
-        <p class="text-stone-500 italic tracking-widest text-lg">—— 黃有志博士：跨越國界的火山地質學講座 ——</p>
-    </header>
-
-    <div class="grid md:grid-cols-3 gap-6 mb-16">
-        <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-orange-400 card-hover text-center">
-            <div class="text-xs text-stone-400 font-bold uppercase mb-2">地理特徵</div>
-            <div class="text-3xl font-serif text-orange-600">巨大破火山口</div>
-        </div>
-        <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-orange-400 card-hover text-center">
-            <div class="text-xs text-stone-400 font-bold uppercase mb-2">構造背景</div>
-            <div class="text-3xl font-serif text-orange-600">板塊隱沒帶</div>
-        </div>
-        <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-orange-400 card-hover text-center">
-            <div class="text-xs text-stone-400 font-bold uppercase mb-2">研究對象</div>
-            <div class="text-3xl font-serif text-orange-600">Vs 橫波構造</div>
-        </div>
-    </div>
-
-    <div class="space-y-20 text-stone-700 leading-relaxed">
-        
-        <section class="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-                <h3 class="serif text-2xl mb-6 flex items-center">
-                    <span class="bg-orange-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">01</span>
-                    為什麼台灣火山不如日本活躍？
-                </h3>
-                <p class="mb-4">同樣位於板塊交界，但「互動方式」決定了火山的命運：</p>
-                <ul class="space-y-4 text-sm text-stone-600">
-                    <li class="flex items-start">
-                        <span class="w-2 h-2 bg-orange-400 rounded-full mt-1.5 mr-3 shrink-0"></span>
-                        <span><strong>日本：典型隱沒帶。</strong> 太平洋板塊隱沒至歐亞板塊下方，含水岩石下沉誘發地函熔融，形成穩定的火山弧（如阿蘇山）。</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="w-2 h-2 bg-orange-400 rounded-full mt-1.5 mr-3 shrink-0"></span>
-                        <span><strong>台灣：複雜碰撞帶。</strong> 主要以板塊錯動擠壓為主，岩漿通道不如隱沒帶容易穩定發育。</span>
-                    </li>
-                </ul>
-            </div>
-            <div class="rounded-2xl overflow-hidden shadow-xl rotate-1 group">
-                <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/5.jpg" alt="火山構造分析" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
-                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖一：阿蘇破火山口地下 Vs 橫波速度構造圖</div>
-            </div>
-        </section>
-
-        <section class="grid md:grid-cols-2 gap-12 items-center">
-            <div class="order-2 md:order-1 rounded-2xl overflow-hidden shadow-xl -rotate-1 group">
-                <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics/main/6.jpg" alt="火山噴發類型" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">
-                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖二：全球火山噴發類型與規模對比</div>
-            </div>
-            <div class="order-1 md:order-2">
-                <h3 class="serif text-2xl mb-6 flex items-center">
-                    <span class="bg-orange-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">02</span>
-                    火山渣 vs 浮石：沉浮之間的科學
-                </h3>
-                <p class="mb-4">課堂現場的手感實驗，揭示了岩漿冷卻時的氣體逃逸過程：</p>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-stone-50 p-4 rounded-xl border-l-4 border-stone-300">
-                        <p class="font-bold text-stone-800 text-sm mb-1">火山渣 (Scoria)</p>
-                        <p class="text-xs text-stone-500">氣孔相通，水會滲入。密度較大，丟入水中會沉底。</p>
-                    </div>
-                    <div class="bg-orange-50 p-4 rounded-xl border-l-4 border-orange-300">
-                        <p class="font-bold text-stone-800 text-sm mb-1">浮石 (Pumice)</p>
-                        <p class="text-xs text-stone-500">獨立氣室，封鎖空氣。密度比水小，會漂浮在水面。</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="mb-16">
-            <div class="bg-stone-900 text-stone-100 p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
-                <div class="relative z-10">
-                    <h3 class="serif text-3xl mb-6">科學觀察的重量</h3>
-                    <p class="text-stone-400 leading-relaxed mb-8">
-                        透過黃博士對阿蘇火山 Vs 構造的研究，我們不僅看見了巨大的破火山口，更學會了如何運用橫波速度分布來推測地下的岩漿庫位置。這種「由微觀岩石觀察到宏觀構造分析」的思維，是地球物理最迷人之處。
-                    </p>
-                    <div class="flex items-center space-x-4">
-                        <div class="h-px flex-1 bg-stone-700"></div>
-                        <span class="serif italic text-orange-400">Deep Earth, Wide Vision.</span>
-                        <div class="h-px flex-1 bg-stone-700"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </div>
-
-    <footer class="mt-20 border-t border-stone-200 pt-10">
-        <div class="bg-white/50 p-8 rounded-2xl italic text-stone-500 text-sm leading-relaxed">
-            「每一顆火山渣的孔隙，都記錄了岩漿冷卻與氣體噴發的瞬間故事。這次講座讓我明白，台灣與日本雖然同樣面臨地震威脅，但透過比較構造學，我們能更清楚地了解自己土地的獨特性。」 —— 陳亞歆 (U11310002)
-        </div>
-    </footer>
-</div>
-            <div v-else-if="currentPage === 'monitoring'" key="monitoring" class="max-w-4xl mx-auto py-12 px-6">
-    <header class="mb-12 border-b border-stone-200 pb-8 text-center">
-        <h2 class="serif text-5xl text-stone-800 mb-6">震波下的守護者</h2>
-        <p class="text-stone-400 italic text-lg tracking-wide">—— 廖勿渝博士：地震監測系統與 AI 技術前瞻 ——</p>
-    </header>
-
-    <div class="grid md:grid-cols-2 gap-8 mb-16">
-        <div class="bg-blue-50 p-8 rounded-3xl border-t-4 border-blue-400 shadow-sm">
-            <h4 class="font-bold text-blue-800 mb-3 flex items-center">
-                <span class="mr-2">⏱️</span> 短期監測：地震預警 (EEW)
-            </h4>
-            <p class="text-sm text-stone-600 leading-relaxed">
-                利用 P 波與 S 波的時間差（盲區外）。在破壞性強的 S 波到達前，爭取數秒至數十秒的黃金避難時間，保護人身安全與關鍵設施。
-            </p>
-        </div>
-        <div class="bg-green-50 p-8 rounded-3xl border-t-4 border-green-400 shadow-sm">
-            <h4 class="font-bold text-green-800 mb-3 flex items-center">
-                <span class="mr-2">🧩</span> 長期監測：地底拼圖
-            </h4>
-            <p class="text-sm text-stone-600 leading-relaxed">
-                透過高精度的資料累積，辨識「盲斷層」。這些斷層未延伸至地表，僅能透過密集的微震分布判斷其結構與潛在威脅。
-            </p>
-        </div>
-    </div>
-
-    <div class="space-y-20 text-stone-700 leading-relaxed">
-        
-        <section class="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-                <h3 class="serif text-2xl mb-6 flex items-center text-stone-800">
-                    <span class="bg-stone-800 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">01</span>
-                    尋找地底的「盲斷層」
-                </h3>
-                <p class="mb-4">
-                    許多破壞性地震源於地表看不見的<strong>盲斷層 (Blind Thrust Fault)</strong>。長期監測將無數個微小的震央點位化為剖面圖，讓隱藏的地質結構無所遁形。
-                </p>
-                <div class="bg-stone-100 p-4 rounded-xl italic text-xs text-stone-500">
-                    「現在雜亂無章的點位，在累積夠多資料後，將成為指引安全的重要線索。」
-                </div>
-            </div>
-            <div class="rounded-2xl overflow-hidden shadow-xl rotate-1 group">
                 
-                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖一：透過微震分布定位隱藏斷層結構</div>
-            </div>
-        </section>
 
-        <section class="grid md:grid-cols-2 gap-12 items-center">
-            <div class="order-2 md:order-1 rounded-2xl overflow-hidden shadow-xl -rotate-1 group">
-                
-                <div class="bg-white p-4 text-xs italic text-center text-stone-400 text-serif">圖二：Deep Learning 自動判讀 P/S 波相位</div>
-            </div>
-            <div class="order-1 md:order-2">
-                <h3 class="serif text-2xl mb-6 flex items-center text-stone-800">
-                    <span class="bg-stone-800 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">02</span>
-                    AI 與深度學習的數位革命
-                </h3>
-                <p class="mb-4 text-sm">
-                    傳統地震觀測依賴人工挑選波相（Manual Picking），但在處理如花蓮地震等複雜序列時，人工判讀效率與一致性面臨挑戰。
-                </p>
-                <ul class="space-y-3 text-xs text-stone-600">
-                    <li class="flex items-start"><span class="text-blue-500 mr-2">●</span> <strong>高穩定性：</strong>AI 依照統一基準判讀，排除人工主觀誤差。</li>
-                    <li class="flex items-start"><span class="text-blue-500 mr-2">●</span> <strong>海量處理：</strong>能在短時間內處理來自數百個測站的四面八方訊號。</li>
-                    <li class="flex items-start"><span class="text-blue-500 mr-2">●</span> <strong>精確預警：</strong>優化 P 波偵測演算法，提升 EEW 系統的啟動速率。</li>
-                </ul>
-            </div>
-        </section>
+                <div v-if="!quizSolved" class="space-y-6">
 
-        <section class="mb-16">
-            <div class="bg-stone-900 text-stone-100 p-10 rounded-[3rem] shadow-2xl">
-                <h3 class="serif text-3xl mb-8 text-center text-blue-300">從手動到自動：觀測流程的進化</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-[10px]">
-                    <div class="p-4 border border-stone-700 rounded-xl">人工挑選<br>相次到達</div>
-                    <div class="p-4 border border-stone-700 rounded-xl bg-blue-900/30">AI 自動<br>相位辨識</div>
-                    <div class="p-4 border border-stone-700 rounded-xl">震源與規模<br>自動計算</div>
-                    <div class="p-4 border border-stone-700 rounded-xl bg-blue-900/30">即時發布<br>警報訊息</div>
+                    <p class="text-center text-stone-500 mb-6 font-medium">問題：科學家如何處理「海上缺乏測站」導致的地震定位困難？</p>
+
+                    <div class="grid gap-4">
+
+                        <button @click="checkAnswer('A')" class="w-full py-4 px-6 bg-white hover:bg-earth hover:text-white rounded-2xl transition shadow-sm text-left">
+
+                            A. 略過不完整的資料，只分析有測站的陸地
+
+                        </button>
+
+                        <button @click="checkAnswer('B')" class="w-full py-4 px-6 bg-white hover:bg-earth hover:text-white rounded-2xl transition shadow-sm text-left">
+
+                            B. 透過「逆推關係」在不確定性中找出最合理解
+
+                        </button>
+
+                    </div>
+
                 </div>
-                <p class="mt-8 text-xs text-stone-400 leading-relaxed text-center">
-                    廖博士展示的大埔地震序列（Dapu earthquake sequence）研究結果顯示，數位自動化處理後的資料精度遠高於傳統方法，這是科技賦予地球物理學的強大武器。
-                </p>
-            </div>
+
+
+
+                <transition name="fade">
+
+                    <div v-if="quizFeedback" class="mt-8 p-6 rounded-2xl" :class="quizCorrect ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'">
+
+                        <p class="font-bold mb-2">{{ quizCorrect ? '🏆 正確解讀！' : '❌ 值得進一步思考...' }}</p>
+
+                        <p class="text-sm leading-relaxed">{{ quizFeedback }}</p>
+
+                        <button v-if="!quizCorrect" @click="quizFeedback = null" class="mt-4 text-xs underline uppercase">再次嘗試</button>
+
+                    </div>
+
+                </transition>
+
+            </section>
+
         </section>
 
     </div>
 
-    <footer class="mt-20 border-t border-stone-200 pt-10">
-        <div class="flex flex-col md:flex-row gap-8 items-center">
-            <div class="flex-1 bg-white/50 p-6 rounded-2xl italic text-stone-500 text-sm">
-                「看到年僅 17 歲的高中生能自學開發地震 App，再對比廖博士專業的深度學習研究，我深刻感受到科學不分年齡，但專業的深度需要時間與熱情去灌溉。」
-            </div>
-            <div class="text-right">
-                <p class="text-stone-400 text-xs">心得撰寫人</p>
-                <p class="serif text-lg text-stone-800">陳亞歆 U11310002</p>
-            </div>
-        </div>
-    </footer>
-</div>
 
-            </transition>
-        </main>
-
-        <footer class="border-t border-stone-100 py-20 px-6 text-center">
-            <p class="serif text-stone-400 text-sm tracking-widest">© 2025 GEOPHYSICS & DATA SCIENCE JOURNEY</p>
-            <p class="text-stone-300 text-[10px] mt-4 uppercase font-bold tracking-tighter">Powered by Vue.js & Geophysics Passion</p>
-        </footer>
-    </div>
 
     <script>
+
         const { createApp, ref } = Vue;
 
+
+
         createApp({
+
             setup() {
-                const currentPage = ref('home');
 
-                const weeks = [
-                    { date: "09/10", title: "探險啟航：數位環境架設", category: "Skill", target: "intro", desc: "安裝 Python、申請 Hugging Face 與 Dify，建立雲端研究室。", tags: ["Python", "Colab", "Dify"] },
-                    { date: "09/17", title: "震測初探：折射探勘原理", category: "Knowledge", target: "field", desc: "理解臨界折射與走時曲線，準備進入黑森林實測。", tags: ["Refraction", "Pygmt"] },
-                    { date: "09/24", title: "黑森林實驗：實地數據採集", category: "Practice", target: "field", desc: "24 個地震儀的佈設，感受地面微小的顫動。", tags: ["Field Work", "Geophones"] },
-                    { date: "10/01", title: "甘禮有博士：地球透視鏡", category: "Lecture", target: "home", desc: "地震層析成像與正逆推原理，透視地底構造。", tags: ["Tomography", "Inversion"] },
-                    { date: "10/15", title: "重力探勘：測量地球質量", category: "Knowledge", target: "home", desc: "自由空間與布蓋修正，學會秤出地球的重量。", tags: ["Gravity", "Bouguer"] },
-                    { date: "12/10", title: "黃有志博士：火山與防災", category: "Lecture", target: "home", desc: "從阿蘇火山到嘉南平原，談旅日經驗與地磁應用。", tags: ["Volcano", "Magnetism"] },
-                    { date: "12/17", title: "廖勿渝博士：AI 與地震學", category: "Lecture", target: "liao", desc: "深度學習如何改變地震預警與監測的未來。", tags: ["AI", "Deep Learning"] }
-                ];
+                // 1. 原有的狀態變數
 
-                const grading = [
-                    { name: "平時實作與野外報告", percent: 40 },
-                    { name: "期中理論評量", percent: 20 },
-                    { name: "期末互動專題發表", percent: 40 }
-                ];
+                const currentPage = ref('kan');
 
-                const navigateTo = (target) => {
-                    if (target) currentPage.value = target;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                };
 
-                return { currentPage, weeks, grading, navigateTo };
-            }
-        }).mount('#app');
-    </script>
-</body>
-</html>
 
+                // 2. 合併進來的問答邏輯變數 (JS 部分)
+
+                const quizFeedback = ref(null);
+
+                const quizCorrect = ref(false);
+
+                const quizSolved = ref(false);
+
+
+
+                // 3. 合併進來的判斷功能 (JS 部分)
+
+                const checkAnswer = (choice) => {
+
+                    if (choice === 'B') {
+
+                        quizCorrect.value = true;
+
+                        quizFeedback.value = "這正是演講中提到的關鍵。由於觀測環境不完美（如海上無法設站），我們會面臨『病態問題』。科學家利用逆推關係 (Inversion)，在數學上處理這些不確定性，尋求誤差最小的最佳解。這也解釋了為何地震預警需要快速的時估計。";
+
+                    } else {
+
+                        quizCorrect.value = false;
+
+                        quizFeedback.value = "老師提到，如果因為資料不全就略過，我們將永遠無法理解海洋下的
+
+
+
+
+
+                            <div v-else-if="currentPage === 'gravity'" key="gravity" class="max-w-4xl mx-auto py-12 px-6">
+
+    <header class="mb-12 border-b border-stone-200 pb-8 text-center">
+
+        <h2 class="serif text-5xl text-stone-800 mb-6">重力異常：秤出大地的重量</h2>
+
+        <p class="text-stone-400 italic text-lg">理解修正後的數值如何揭露地底的物質分佈</p>
+
+    </header>
+
+
+
+    <div class="grid md:grid-cols-3 gap-6 mb-16">
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+
+            <h4 class="font-bold text-earth mb-2">1. 理論重力 (Gt)</h4>
+
+            <p class="text-xs text-stone-500 leading-relaxed">考量地球自轉與橢球形狀。隨緯度變化：兩極較重，赤道較輕。</p>
+
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+
+            <h4 class="font-bold text-earth mb-2">2. 自由空間 (FAC)</h4>
+
+            <p class="text-xs text-stone-500 leading-relaxed">考量「高度」影響。每上升一公尺，距離地心越遠，重力約減小 0.3086 mGal。</p>
+
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+
+            <h4 class="font-bold text-earth mb-2">3. 布格改正 (BC)</h4>
+
+            <p class="text-xs text-stone-500 leading-relaxed">考量「中間介質」。扣除觀測點與海平面之間多出來的岩石質量（密度 ρ 通常取 2.67）。</p>
+
+        </div>
+
+    </div>
+
+
+
+    <section class="bg-stone-800 text-stone-100 p-10 rounded-[2.5rem] shadow-2xl mb-16">
+
+        <div class="flex items-center justify-between mb-8">
+
+            <h3 class="serif text-2xl text-white">【重力挑戰賽】計算布格重力異常</h3>
+
+            <span class="px-3 py-1 bg-earth text-xs rounded-full">難度：中級</span>
+
+        </div>
+
+
+
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+
+            <div class="space-y-6 text-stone-800">
+
+                <div>
+
+                    <label class="block text-xs uppercase tracking-widest text-stone-400 mb-2 font-bold">實測重力 (Gobs) - mGal</label>
+
+                    <input v-model.number="game.obs" type="number" step="0.1" class="w-full bg-stone-700 border-none rounded-xl p-3 text-white focus:ring-2 focus:ring-earth outline-none">
+
+                </div>
+
+                <div>
+
+                    <label class="block text-xs uppercase tracking-widest text-stone-400 mb-2 font-bold">理論重力 (Gt) - mGal</label>
+
+                    <input v-model.number="game.theory" type="number" step="0.1" class="w-full bg-stone-700 border-none rounded-xl p-3 text-white focus:ring-2 focus:ring-earth outline-none">
+
+                </div>
+
+                <div>
+
+                    <label class="block text-xs uppercase tracking-widest text-stone-400 mb-2 font-bold">海拔高度 (h) - 公尺</label>
+
+                    <input v-model.number="game.height" type="number" class="w-full bg-stone-700 border-none rounded-xl p-3 text-white focus:ring-2 focus:ring-earth outline-none">
+
+                </div>
+
+                <button @click="calculateGravityChallenge" class="w-full bg-white text-stone-800 font-bold py-4 rounded-xl hover:bg-earth hover:text-white transition shadow-lg active:scale-95">
+
+                    計算最終結果
+
+                </button>
+
+            </div>
+
+
+
+            <div class="bg-stone-700/50 p-8 rounded-3xl border border-stone-600 border-dashed min-h-[300px] flex flex-col justify-center">
+
+                <div v-if="game.result === null" class="text-center text-stone-500 italic">
+
+                    請輸入數據後點擊計算...<br>提示：假設密度 ρ = 2.67 g/cm³
+
+                </div>
+
+                <div v-else class="space-y-4">
+
+                    <div class="flex justify-between border-b border-stone-600 pb-2">
+
+                        <span class="text-sm">自由空間改正值 (FAC)：</span>
+
+                        <span class="text-green-400 font-mono font-bold">+{{ game.fac.toFixed(2) }} mGal</span>
+
+                    </div>
+
+                    <div class="flex justify-between border-b border-stone-600 pb-2">
+
+                        <span class="text-sm">布格改正值 (BC)：</span>
+
+                        <span class="text-red-400 font-mono font-bold">-{{ game.bc.toFixed(2) }} mGal</span>
+
+                    </div>
+
+                    <div class="pt-4 text-center">
+
+                        <div class="text-xs text-stone-400 uppercase mb-1 font-bold">布格異常 (ΔgB)</div>
+
+                        <div class="text-5xl font-serif text-white">{{ game.result.toFixed(2) }} <span class="text-sm">mGal</span></div>
+
+                    </div>
+
+                    <div class="mt-4 p-4 bg-stone-800/80 rounded-lg text-sm leading-relaxed text-stone-200 border border-stone-600">
+
+                        <span class="text-earth font-bold">💡 物理意義：</span> {{ game.interpretation }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <div class="bg-white p-10 rounded-3xl border border-stone-100 shadow-sm">
+
+        <h3 class="serif text-2xl mb-6 text-stone-800">公式筆記：</h3>
+
+        <div class="font-mono text-sm space-y-4 bg-stone-50 p-6 rounded-xl text-stone-600">
+
+            <p class="flex items-center"><span class="w-2 h-2 bg-earth rounded-full mr-3"></span> 1. 自由空間改正 (FAC) = 0.3086 × h</p>
+
+            <p class="flex items-center"><span class="w-2 h-2 bg-earth rounded-full mr-3"></span> 2. 布格改正 (BC) = 0.04193 × ρ × h</p>
+
+            <p class="flex items-center"><span class="w-2 h-2 bg-earth rounded-full mr-3"></span> 3. 布格異常 = Gobs - Gt + FAC - BC</p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+// --- JavaScript 邏輯部分 (需放入 Vue setup 或 data 中) ---
+
+
+
+// 1. 定義反應式狀態 (Reactive State)
+
+const game = ref({
+
+    obs: 978900.5,
+
+    theory: 979000.0,
+
+    height: 150,
+
+    fac: 0,
+
+    bc: 0,
+
+    result: null,
+
+    interpretation: ""
+
+});
+
+
+
+// 2. 定義計算邏輯 (Method)
+
+const calculateGravityChallenge = () => {
+
+    const rho = 2.67;
+
+    
+
+    // 計算 FAC (每公尺改正 0.3086 mGal)
+
+    game.value.fac = 0.3086 * game.value.height;
+
+    
+
+    // 計算 BC (布格平板改正公式)
+
+    game.value.bc = 0.04193 * rho * game.value.height;
+
+    
+
+    // 計算最終異常值: 實測 - 理論 + 自由空間改正 - 布格改正
+
+    game.value.result = game.value.obs - game.value.theory + game.value.fac - game.value.bc;
+
+
+
+    // 根據結果給予專業物理見解
+
+    if (game.value.result > 5) {
+
+        game.value.interpretation = "結果為正異常！這表示地底下可能埋藏著密度較高的物質（例如：玄武岩基盤、高密度礦體或地殼變薄處）。";
+
+    } else if (game.value.result < -5) {
+
+        game.value.interpretation = "結果為負異常！這暗示地底可能存在較輕的物質，或是存在巨厚的沉積盆地，甚至是地殼向下增厚的結果。";
+
+    } else {
+
+        game.value.interpretation = "數值接近零，表示實測值經修正後與理論模型吻合，代表該處地質結構均勻且符合地殼均衡。";
+
+    }
+
+};
+
+
+
+// 確保在 return 中包含這兩者
+
+// return { game, calculateGravityChallenge, ... };
+
+</script>
+
+
+
+                 <div v-else-if="currentPage === 'volcano'" key="volcano" class="max-w-4xl mx-auto py-10 px-4">
+
+    <header class="text-center mb-16">
+
+        <h2 class="serif text-5xl text-stone-800 mb-6">阿蘇火山的深層密碼</h2>
+
+        <p class="text-stone-500 italic tracking-widest text-lg">—— 黃有志博士：跨越國界的火山地質學講座 ——</p>
+
+    </header>
+
+
+
+    <div class="grid md:grid-cols-3 gap-6 mb-16">
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border-t-4 border-orange-400 card-hover text-center">
+
+            <div class="text-xs text-stone-400 font-bold uppercase mb-2">地理特徵</div>
+
+            <div class="text-3xl font-serif text-orange-600">巨大破火山口</div>
