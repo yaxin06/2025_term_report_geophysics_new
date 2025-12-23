@@ -242,7 +242,11 @@ fig.plot(data="@hotspots.txt", style="c0.2c", fill="red")</code></pre>
             return {
                 currentPage: 'home',
                 courses: [
-                    { id: 'w1', date: '09/10', title: '課程啟航', subtitle: '架構與評分' },
+                  { id: 'w1', date: '09/10', title: '探索地心：課程啟航', subtitle: '上課方式、成績計算與核心地圖', details: [
+                        { label: '上課方式', text: '探究式教學，強調從實作中理解物理現象。', tag: 'Structure' },
+                        { label: '成績計算', text: '專題發表 40% <br> 實驗報告 30% <br> 實作參與 30%', tag: 'Grading' },
+                        { label: '核心主題', text: '建立地球物理知識框架。', tag: 'Core' }
+                    ]},
                     { id: 'w2', date: '09/17', title: 'GitHub Codespace', subtitle: '雲端開發環境' },
                     { id: 'w3', date: '09/24', title: '校園野外實驗', subtitle: '震測實務紀錄' },
                     { id: 'w4', date: '10/01', title: '甘禮有博士演講', subtitle: '地震層析成像' },
