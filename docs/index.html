@@ -76,23 +76,168 @@
                             <p class="text-gray-300 text-sm leading-relaxed" v-html="detail.text"></p>
                         </div>
                         
-                        <div v-if="currentWeek.id === 'w3'" class="glass p-8 rounded-3xl border border-green-900/30">
-                            <h4 class="font-bold text-green-500 mb-4 text-sm">黑森林震測實驗數據結果</h4>
-                            <div class="grid grid-cols-3 gap-4 text-center">
-                                <div class="bg-black/40 p-3 rounded-xl">
-                                    <p class="text-[10px] text-gray-500">直達波 V1</p>
-                                    <p class="text-sm font-mono">333.01 m/s</p>
-                                </div>
-                                <div class="bg-black/40 p-3 rounded-xl">
-                                    <p class="text-[10px] text-gray-500">折射波 V2</p>
-                                    <p class="text-sm font-mono">813.13 m/s</p>
-                                </div>
-                                <div class="bg-black/40 p-3 rounded-xl border border-amber-600/30">
-                                    <p class="text-[10px] text-amber-500">地層厚度</p>
-                                    <p class="text-sm font-mono text-amber-500">7.67 m</p>
-                                </div>
-                            </div>
-                        </div>
+                    <div v-else-if="currentPage === 'w2'" class="animate__animated animate__fadeIn max-w-4xl mx-auto">
+    <button @click="currentPage = 'home'" class="mb-8 text-sm text-gray-500 hover:text-white transition-colors">← 返回總覽</button>
+    
+    <header class="mb-12 border-b border-white/10 pb-8">
+        <h2 class="text-4xl font-bold mb-4 accent-text">數位地球物理實驗室</h2>
+        <p class="text-gray-400 italic text-lg tracking-wide">雲端 Codespace 與 Python 地震學工具鏈教學</p>
+    </header>
+
+    <section class="mb-16">
+        <h3 class="text-2xl mb-6 flex items-center text-white">
+            <span class="bg-amber-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3 font-mono">01</span>
+            環境準備：Fork 與啟動
+        </h3>
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="glass p-6 rounded-2xl shadow-sm">
+                <p class="font-bold mb-2 accent-text">1. 建立個人副本</p>
+                <p class="text-sm text-gray-400 mb-4">進入老師的 <a href="https://github.com/cwbdayi638/geophysics-class-2025" target="_blank" class="underline hover:text-white">GitHub Repo</a>，點擊右上角 <strong>Fork</strong>。</p>
+                <div class="bg-black/30 p-3 rounded-lg border border-white/5 text-xs italic text-gray-500">
+                    這會在你的帳號下生成一份完全相同的代碼副本。
+                </div>
+            </div>
+            <div class="glass p-6 rounded-2xl shadow-sm">
+                <p class="font-bold mb-2 accent-text">2. 開啟雲端環境</p>
+                <p class="text-sm text-gray-400 mb-4">點擊綠色 <strong>&lt;&gt; Code</strong> 按鈕，選擇 <strong>Create codespace on main</strong>。</p>
+                <div class="flex items-center text-xs text-amber-200 bg-amber-900/20 p-2 rounded-lg border border-amber-900/30">
+                    <span>🕒 等待約 1-2 分鐘讓環境自動安裝 ObsPy 與 PyGMT。</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-16 glass p-8 rounded-[2rem]">
+        <h3 class="text-2xl mb-6 flex items-center text-white">
+            <span class="bg-amber-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3 font-mono">02</span>
+            撰寫作業：AI 輔助開發
+        </h3>
+        <div class="space-y-6">
+            <div class="bg-black/20 p-6 rounded-2xl border border-white/10">
+                <p class="text-sm font-bold text-gray-300 mb-4 font-mono">📍 目錄：/hw/hw_01 | 檔名：HW01_學號.ipynb</p>
+                <div class="grid md:grid-cols-2 gap-6 text-sm">
+                    <div class="border-l-4 border-blue-500/50 pl-4">
+                        <h4 class="font-bold text-blue-400 mb-2 italic">ObsPy：地震波分析</h4>
+                        <pre class="bg-stone-900 text-blue-100/80 p-3 rounded-lg text-[11px] overflow-x-auto font-mono">
+# AI Prompt: 讀取地震數據並濾波
+st = obspy.read()
+st.filter("bandpass", freqmin=1, freqmax=10)
+st.plot()</pre>
+                    </div>
+                    <div class="border-l-4 border-green-500/50 pl-4">
+                        <h4 class="font-bold text-green-400 mb-2 italic">PyGMT：地圖繪製</h4>
+                        <pre class="bg-stone-900 text-green-100/80 p-3 rounded-lg text-[11px] overflow-x-auto font-mono">
+# AI Prompt: 用 pygmt 畫台灣地圖
+fig = pygmt.Figure()
+fig.grdimage(grid="@earth_day_01m")
+fig.plot(x=lon, y=lat, style="c0.3c")</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-16">
+        <h3 class="text-2xl mb-6 flex items-center accent-text">
+            <span class="bg-amber-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3 font-mono">03</span>
+            提交作業：Git 指令與 PR
+        </h3>
+        <div class="space-y-6">
+            <div class="bg-black rounded-2xl p-6 shadow-2xl border border-white/5">
+                <div class="font-mono text-sm space-y-2">
+                    <p class="text-gray-600"># 使用快捷指令上傳</p>
+                    <p class="text-emerald-400">sh git_all.sh <span class="text-amber-400">"update HW1-學號"</span></p>
+                    <p class="text-gray-600 mt-4"># 手動流程</p>
+                    <p class="text-white">git add . && git commit -m "Done" && git push</p>
+                </div>
+            </div>
+            <div class="glass p-8 rounded-3xl">
+                <h4 class="font-bold mb-4 flex items-center text-white italic">🚀 建立 Pull Request (PR)</h4>
+                <ol class="text-sm text-gray-400 space-y-3 list-decimal pl-5 leading-relaxed">
+                    <li>回到 GitHub 點擊 <strong>Contribute → Open pull request</strong>。</li>
+                    <li>確認 Head 為你的 Fork Repo。</li>
+                    <li>附上 <strong>ObsPy/PyGMT 結果圖</strong> 並寫下觀察。</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div v-else-if="currentPage === 'w3'" class="animate__animated animate__fadeIn max-w-5xl mx-auto">
+    <button @click="currentPage = 'home'" class="mb-8 text-sm text-gray-500 hover:text-white transition-colors">← 返回總覽</button>
+    
+    <header class="mb-12">
+        <h2 class="text-4xl font-bold mb-4 accent-text font-serif">校園野外震測實驗：淺層地質探勘</h2>
+        <p class="text-gray-400 tracking-widest uppercase text-xs">Field Experiment Report: Seismic Refraction Survey</p>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+        <div class="group relative overflow-hidden rounded-xl glass border border-white/10">
+            <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics_new/main/%E5%9C%B0%E7%89%A91.jpg" class="w-full h-64 object-cover opacity-80 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105">
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
+                <p class="text-xs font-bold text-white font-mono">Fig 1. 測線佈設與受波器 (Geophone) 安裝</p>
+            </div>
+        </div>
+        <div class="group relative overflow-hidden rounded-xl glass border border-white/10">
+            <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics_new/main/2.jpg" class="w-full h-64 object-cover opacity-80 group-hover:opacity-100 transition-all">
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
+                <p class="text-xs font-bold text-white font-mono">Fig 2. 震源激發：人工捶擊實驗</p>
+            </div>
+        </div>
+        <div class="group relative overflow-hidden rounded-xl glass border border-white/10">
+            <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics_new/main/3.jpg" class="w-full h-64 object-cover opacity-80 group-hover:opacity-100 transition-all">
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
+                <p class="text-xs font-bold text-white font-mono">Fig 3. 數據擷取系統：觀測地震波傳播</p>
+            </div>
+        </div>
+        <div class="group relative overflow-hidden rounded-xl glass border border-white/10">
+            <img src="https://raw.githubusercontent.com/yaxin06/2025_term_report_geophysics_new/main/4.jpg" class="w-full h-64 object-cover opacity-80 group-hover:opacity-100 transition-all">
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
+                <p class="text-xs font-bold text-white font-mono">Fig 4. 實驗數據紀錄與初步走時判讀</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-8">
+            <section class="glass p-8 rounded-3xl border-l-4 border-amber-600">
+                <h3 class="text-xl font-bold mb-4 text-white">實驗原理：折射震測 (Seismic Refraction)</h3>
+                <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                    本實驗利用人工捶擊地面產生彈性波，觀察波速在不同介質間的傳播差異。當入射波到達速度較快的地層介面時，會產生**臨界折射 (Critical Refraction)**，並沿著介面傳播後回傳至地表。
+                </p>
+                <div class="bg-amber-900/10 p-4 rounded-xl text-xs text-amber-200 italic leading-loose">
+                    
+                    <br>根據楊廂甯與陳亞歆的報告，我們透過 <strong>V1 (表土層)</strong> 與 <strong>V2 (基盤)</strong> 的速度對比，推算地下風化層的厚度。
+                </div>
+            </section>
+
+            <section class="glass p-8 rounded-3xl border-l-4 border-emerald-600">
+                <h3 class="text-xl font-bold mb-4 text-white">數據處理流程</h3>
+                <ul class="text-sm text-gray-400 space-y-4">
+                    <li class="flex items-start"><span class="text-emerald-500 mr-2">●</span> <strong>初至波拾取 (Picking First Breaks)：</strong> 在地震圖上精確標記縱波 (P-wave) 到達受波器的時間。</li>
+                    <li class="flex items-start"><span class="text-emerald-500 mr-2">●</span> <strong>走時曲線繪製 (Travel-Time Curve)：</strong> 將距離與時間繪製成圖，其斜率之倒數即為地層速度。</li>
+                    <li class="flex items-start"><span class="text-emerald-500 mr-2">●</span> <strong>深度模型反演：</strong> 根據截距時間 (Intercept Time) 計算受測區的地層深度。</li>
+                </ul>
+            </section>
+        </div>
+
+        <aside class="space-y-6">
+            <div class="bg-amber-600 p-6 rounded-3xl text-black shadow-lg">
+                <h4 class="font-bold mb-2">💡 實驗觀察紀錄</h4>
+                <p class="text-xs leading-relaxed font-medium">
+                    校園測區的地表速度偏低，推測與鬆散的填土層有關。隨著深度增加，觀察到明顯的速度跳躍點，暗示了硬質層的存在。
+                </p>
+            </div>
+            <div class="glass p-6 rounded-3xl border border-white/5">
+                <h4 class="text-sm font-bold text-white mb-4">實作小組成員</h4>
+                <div class="space-y-2 text-xs text-gray-400">
+                    <div class="flex justify-between"><span>楊廂甯</span><span class="opacity-50 tracking-tighter">Analysis</span></div>
+                    <div class="flex justify-between"><span>陳亞歆</span><span class="opacity-50 tracking-tighter">Data Recording</span></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
 
                         <div v-if="currentWeek.extra" class="p-8 rounded-3xl bg-amber-900/10 border border-amber-500/20 italic text-sm text-gray-400">
                             "{{ currentWeek.extra }}"
